@@ -1,0 +1,167 @@
+/* Disk scheduling view (.dk-): cylinder strip with the read head, request markers, seek-path chart, compare bars. */
+.dk-strip {
+  position: relative;
+  padding-top: 44px;
+}
+.dk-track {
+  position: relative;
+  height: 34px;
+  border-radius: 8px;
+  border: 1.5px solid var(--ink-2);
+  background: var(--surface-2);
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--line) 0 1px,
+    transparent 1px 10%
+  );
+}
+.dk-req {
+  position: absolute;
+  top: 5px;
+  width: 3px;
+  height: 22px;
+  margin-left: -1px;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: opacity 0.3s;
+}
+.dk-req::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: -4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.dk-req.done {
+  opacity: 0.35;
+  background: var(--hit);
+}
+.dk-req.done::before {
+  background: var(--hit);
+}
+.dk-head {
+  position: absolute;
+  top: 4px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: left 0.7s cubic-bezier(0.3, 0.8, 0.3, 1);
+  z-index: 3;
+  pointer-events: none;
+}
+.dk-head b {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: 6px;
+  padding: 1px 8px;
+}
+.dk-head i {
+  font-style: normal;
+  color: var(--ink);
+  line-height: 1;
+  font-size: 14px;
+  margin-top: -1px;
+}
+.dk-ticks {
+  position: relative;
+  height: 18px;
+  margin-top: 4px;
+}
+.dk-tick {
+  position: absolute;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+}
+.dk-m {
+  display: inline-block;
+  width: 4px;
+  height: 14px;
+  border-radius: 2px;
+  margin-right: 7px;
+  vertical-align: -2px;
+}
+.dk-m.pend {
+  background: var(--accent);
+}
+.dk-m.done {
+  background: var(--hit);
+  opacity: 0.5;
+}
+.dk-head-sw {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background: var(--ink);
+  border-radius: 3px;
+  margin-right: 7px;
+  vertical-align: -2px;
+}
+.dk-chart .dk-dist {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  fill: var(--ink-3);
+}
+.dk-chart .dk-cyl {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--ink-2);
+}
+.dk-chart .dk-cyl.now {
+  fill: var(--accent);
+  font-weight: 700;
+  font-size: 12px;
+}
+.dk-bars {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.dk-bar-row {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr) 52px;
+  align-items: center;
+  gap: 10px;
+}
+.dk-bar-label {
+  font-weight: 600;
+  font-size: 14px;
+}
+.dk-bar-track {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  height: 20px;
+  overflow: hidden;
+}
+.dk-bar {
+  height: 100%;
+  background: var(--ink-3);
+  border-radius: 0 5px 5px 0;
+}
+.dk-bar.best {
+  background: var(--hit);
+}
+.dk-multiples {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.dk-mini {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  min-width: 0;
+}
+.dk-mini b {
+  font-family: var(--font-display);
+  font-size: 14px;
+}

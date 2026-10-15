@@ -1,0 +1,282 @@
+/* Page replacement view (.refstrip, .ram, .slot, .verdict, .trace)
+ * Reference-string strip, RAM frames drawn as memory sticks, the hit/fault verdict,
+ * the eviction-order chips, and the frame-by-frame trace table.
+ * @keyframes pop is shared with memory allocation and stays in styles.css.
+ */
+/* ---------- paging stage ---------- */
+.refstrip {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 6px 2px 10px;
+  scroll-behavior: smooth;
+}
+.rcell {
+  flex: none;
+  width: 38px;
+  border-radius: 9px;
+  border: 1.5px solid var(--line);
+  background: var(--surface-2);
+  text-align: center;
+  padding: 4px 0 3px;
+  font-family: var(--font-mono);
+}
+.rcell b {
+  display: block;
+  font-size: 17px;
+}
+.rcell i {
+  display: block;
+  font-style: normal;
+  font-size: 11px;
+  height: 14px;
+  color: var(--ink-3);
+}
+.rcell.hit {
+  background: var(--hit-soft);
+  border-color: var(--hit);
+  color: var(--hit);
+}
+.rcell.fault {
+  background: var(--fault-soft);
+  border-color: var(--fault);
+  color: var(--fault);
+}
+.rcell.now {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+.rcell.future {
+  opacity: 0.55;
+}
+
+.ram {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  padding: 14px 4px 4px;
+}
+.slot {
+  position: relative;
+  width: 84px;
+  text-align: center;
+}
+.slot .stick {
+  height: 92px;
+  border-radius: 8px 8px 4px 4px;
+  border: 2px solid var(--ink-2);
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 800;
+}
+.slot .stick::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 5px;
+  height: 7px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--warn) 0 4px,
+    transparent 4px 7px
+  );
+  opacity: 0.8;
+}
+.slot.empty .stick {
+  border-style: dashed;
+  border-color: var(--line);
+  color: var(--ink-3);
+  font-size: 15px;
+  font-weight: 500;
+  font-family: var(--font-body);
+}
+.slot.empty .stick::after {
+  display: none;
+}
+.slot .flabel {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 6px;
+  font-family: var(--font-mono);
+}
+.slot .out {
+  position: absolute;
+  left: 50%;
+  top: -12px;
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  background: var(--fault-soft);
+  color: var(--fault);
+  border: 1px solid var(--fault);
+  border-radius: 999px;
+  padding: 0 8px;
+  white-space: nowrap;
+  z-index: 2;
+}
+.slot.hit .stick {
+  border-color: var(--hit);
+  background: var(--hit-soft);
+  color: var(--hit);
+}
+.slot.load .stick {
+  border-color: var(--fault);
+  background: var(--fault-soft);
+  color: var(--fault);
+}
+.slot.pop .stick {
+  animation: pop 0.5s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+.verdict {
+  margin-left: auto;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 120px;
+}
+.verdict .big {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 26px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.verdict.hit .big {
+  color: var(--hit);
+}
+.verdict.fault .big {
+  color: var(--fault);
+}
+.verdict .req {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.order {
+  margin-top: 14px;
+}
+.order .otitle {
+  font-size: 13px;
+  color: var(--ink-2);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.order-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: stretch;
+}
+.ochip {
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 4px 10px;
+  text-align: center;
+}
+.ochip b {
+  font-family: var(--font-display);
+  font-size: 17px;
+}
+.ochip small {
+  display: block;
+  font-size: 11px;
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+}
+.ochip.first {
+  border-color: var(--fault);
+}
+.ochip.first small::before {
+  content: "next out · ";
+  color: var(--fault);
+}
+
+.trace-wrap {
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+table.trace {
+  border-collapse: separate;
+  border-spacing: 3px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+.trace th {
+  font-weight: 600;
+  color: var(--ink-3);
+  font-size: 12px;
+  text-align: left;
+  padding-right: 8px;
+  white-space: nowrap;
+}
+.trace td {
+  width: 34px;
+  min-width: 34px;
+  height: 32px;
+  text-align: center;
+  border-radius: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.trace td.ref {
+  background: transparent;
+  border: 0;
+  font-weight: 700;
+  font-size: 15px;
+}
+.trace td.changed {
+  background: var(--fault-soft);
+  border-color: var(--fault);
+  color: var(--fault);
+  font-weight: 700;
+}
+.trace td.hitcol {
+  background: var(--hit-soft);
+  border-color: var(--hit);
+  color: var(--hit);
+  font-weight: 700;
+}
+.trace td.res {
+  border: 0;
+  background: transparent;
+  font-weight: 800;
+  font-size: 16px;
+}
+.trace td.res.hit {
+  color: var(--hit);
+}
+.trace td.res.fault {
+  color: var(--fault);
+}
+.trace td.future {
+  visibility: hidden;
+}
+.trace td.now {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+@media (max-width: 480px) {
+  .slot {
+    width: 68px;
+  }
+  .slot .stick {
+    height: 78px;
+    font-size: 28px;
+  }
+  .verdict {
+    margin-left: 0;
+    width: 100%;
+    flex-direction: row;
+    gap: 12px;
+  }
+}

@@ -1,0 +1,37 @@
+const B = require('../js/engines/bankers.js');
+let pass = 0, fail = 0;
+const eq = (n, got, want) => { const ok = JSON.stringify(got) === JSON.stringify(want); ok ? pass++ : fail++; console.log((ok ? 'PASS ' : 'FAIL ') + n + (ok ? '' : ' got=' + JSON.stringify(got) + ' want=' + JSON.stringify(want))); };
+const c = B.PRESETS[0], inp = B.toInp(c);
+const need = B.needOf(c.alloc, c.max);
+eq('Need matrix', need, [[7, 4, 3], [1, 2, 2], [6, 0, 0], [0, 1, 1], [4, 3, 1]]);
+const s = B.safety(c.alloc, need, B.availOf(inp), 'cyclic');
+eq('Safe sequence (textbook cyclic scan)', s.sequence, [1, 3, 4, 0, 2]);
+eq('Restart-at-P0 scan gives a different but valid order', B.safety(c.alloc, need, [3, 3, 2], 'lowest').sequence, [1, 3, 0, 2, 4]);
+eq('Is safe', s.safe, true);
+eq('Final work', s.frames[s.frames.length - 1].work, [10, 5, 7]);
+// independent brute force over all 120 permutations
+const perms = (a) => a.length <= 1 ? [a] : a.flatMap((x, i) => perms(a.filter((_, j) => j !== i)).map((p) => [x, ...p]));
+const brute = perms([0, 1, 2, 3, 4]).filter((p) => { let w = [3, 3, 2]; for (const i of p) { if (!B.leq(need[i], w)) return false; w = B.sum(w, c.alloc[i]); } return true; });
+eq('Safe-sequence count matches brute force', B.countSequences(c.alloc, need, [3, 3, 2]).count, brute.length);
+eq('Textbook sequence is among them', brute.some((p) => p.join() === '1,3,4,0,2'), true);
+const r1 = B.request(inp, 1, [1, 0, 2], 'cyclic');
+eq('P1 (1,0,2) granted', r1.outcome, 'grant');
+eq('Pretend avail (2,3,0)', r1.pretend.avail, [2, 3, 0]);
+eq('Granted sequence', r1.safety.sequence, [1, 3, 4, 0, 2]);
+// apply the grant, then P4 (3,3,0) must wait, P0 (0,2,0) denied
+const inp2 = { mode: 'avail', avail: r1.pretend.avail, alloc: r1.pretend.alloc, max: c.max };
+eq('P4 (3,3,0) waits', B.request(inp2, 4, [3, 3, 0], 'cyclic').outcome, 'wait');
+eq('P0 (0,2,0) denied', B.request(inp2, 0, [0, 2, 0], 'cyclic').outcome, 'deny');
+eq('Exceeding Need is an error', B.request(inp, 0, [8, 0, 0], 'cyclic').outcome, 'error');
+eq('Request length checked', !!B.request(inp, 0, [1], 'cyclic').error, true);
+const u = B.PRESETS[1], un = B.needOf(u.alloc, u.max);
+const us = B.safety(u.alloc, un, [1, 0, 0], 'cyclic');
+eq('Unsafe preset is unsafe', us.safe, false);
+eq('Unsafe has stuck processes', us.stuck.length > 0, true);
+eq('Unsafe count is 0', B.countSequences(u.alloc, un, [1, 0, 0]).count, 0);
+eq('Total mode derives Available', B.availOf({ mode: 'total', total: [10, 5, 7], alloc: c.alloc }), [3, 3, 2]);
+eq('Validation: Max < Alloc', B.validate({ mode: 'avail', alloc: [[3]], max: [[2]], avail: [0] }).ok, false);
+eq('Validation: total exceeded', B.validate({ mode: 'total', alloc: [[3], [3]], max: [[4], [4]], total: [5] }).ok, false);
+eq('Validation: negative', B.validate({ mode: 'avail', alloc: [[-1]], max: [[2]], avail: [0] }).ok, false);
+eq('Different pick still safe (highest)', B.safety(c.alloc, need, [3, 3, 2], 'highest').safe, true);
+console.log('\n' + pass + ' passed, ' + fail + ' failed'); process.exit(fail ? 1 : 0);

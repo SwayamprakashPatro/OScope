@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="claude:viewport-fit-sides" content="cover" />
+    <title>OScope</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/scheduling.css" />
+    <link rel="stylesheet" href="css/paging.css" />
+    <link rel="stylesheet" href="css/allocation.css" />
+    <link rel="stylesheet" href="css/translation.css" />
+    <link rel="stylesheet" href="css/disk.css" />
+    <link rel="stylesheet" href="css/procstate.css" />
+    <link rel="stylesheet" href="css/bankers.css" />
+    <link rel="stylesheet" href="css/rag.css" />
+    <link rel="stylesheet" href="css/sync.css" />
+  </head>
+  <body>
+    <div class="app" id="app"></div>
+    <noscript>OScope needs JavaScript to run the simulations.</noscript>
+    <script src="js/core/util.js"></script>
+    <script src="js/core/player.js"></script>
+    <script src="js/engines/scheduling.js"></script>
+    <script src="js/engines/paging.js"></script>
+    <script src="js/engines/allocation.js"></script>
+    <script src="js/engines/translation.js"></script>
+    <script src="js/engines/disk.js"></script>
+    <script src="js/engines/procstate.js"></script>
+    <script src="js/engines/bankers.js"></script>
+    <script src="js/engines/rag.js"></script>
+    <script src="js/engines/sync.js"></script>
+    <script src="js/views/scheduling-view.js"></script>
+    <script src="js/views/paging-view.js"></script>
+    <script src="js/views/allocation-view.js"></script>
+    <script src="js/views/translation-view.js"></script>
+    <script src="js/views/disk-view.js"></script>
+    <script src="js/views/procstate-view.js"></script>
+    <script src="js/views/bankers-view.js"></script>
+    <script src="js/views/rag-view.js"></script>
+    <script src="js/views/sync-view.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
