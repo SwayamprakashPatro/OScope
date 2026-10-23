@@ -1,0 +1,47 @@
+/* Journaling view (.jn-): disk boxes, journal, step list, crash strips. */
+.jn-disk { display: grid; gap: 10px; }
+.jn-top { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.jn-box { border: 1px solid var(--line); background: var(--surface-2); border-radius: 12px; padding: 10px 12px; min-width: 0; transition: border-color 0.2s, box-shadow 0.2s; }
+.jn-box h4 { margin: 0 0 6px; font-family: var(--font-display); font-size: 14px; }
+.jn-box.changed { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.jn-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 2px 0; font-size: 13px; }
+.jn-file { font-family: var(--font-mono); font-weight: 700; font-size: 12.5px; padding: 1px 9px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
+.jn-bits { display: flex; flex-wrap: wrap; gap: 2px; }
+.jn-bits span { width: 17px; height: 22px; display: inline-grid; place-items: center; border-radius: 4px; font-size: 12px; border: 1px solid var(--line); color: var(--ink-3); background: var(--surface); }
+.jn-bits span.on { background: var(--ink-2); color: var(--surface); border-color: var(--ink-2); font-weight: 700; }
+.jn-data { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 4px; }
+.jn-cell { border: 1px solid var(--line); border-radius: 7px; text-align: center; padding: 2px 0; background: var(--surface); color: var(--ink-3); transition: background 0.3s; }
+.jn-cell small { display: block; font-family: var(--font-mono); font-size: 10px; }
+.jn-cell b { display: block; font-family: var(--font-mono); font-size: 14px; }
+.jn-cell.changed { outline: 3px solid var(--accent); outline-offset: -1px; }
+.jn-tx { display: grid; gap: 2px; padding: 6px 8px; margin: 4px 0; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); }
+.jn-tx.committed { border-color: var(--hit); background: var(--hit-soft); }
+.jn-tx.open { border-style: dashed; border-color: var(--warn); }
+.jn-state { font-size: 12px; font-weight: 700; color: var(--ink-2); }
+.jn-tx.committed .jn-state { color: var(--hit); }
+.jn-blocks { font-size: 12px; color: var(--ink-2); overflow-wrap: anywhere; }
+.jn-steps { list-style: none; margin: 0; padding: 0; max-height: 300px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; }
+.jn-step { display: flex; gap: 8px; align-items: baseline; padding: 6px 10px; font-size: 13.5px; border-bottom: 1px solid var(--line); cursor: pointer; color: var(--ink-2); }
+.jn-step:last-child { border-bottom: 0; }
+.jn-step.past { color: var(--ink); }
+.jn-step.now { background: var(--accent-soft); color: var(--ink); font-weight: 600; box-shadow: inset 3px 0 0 var(--accent); }
+.jn-step:hover { background: var(--surface-2); }
+.jn-step.t-jcommit .jn-n { background: var(--hit); color: var(--surface); }
+.jn-n { flex: none; min-width: 24px; text-align: center; font-family: var(--font-mono); font-size: 12px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); padding: 0 6px; }
+.jn-op { flex: none; font-size: 11px; font-weight: 700; color: var(--ink-3); text-transform: uppercase; }
+.jn-actions, .jn-viol { margin: 6px 0 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14px; }
+.jn-actions li.replay { color: var(--hit); }
+.jn-viol li { color: var(--ink); }
+.jn-code-tag { display: inline-block; font-family: var(--font-mono); font-size: 11px; font-weight: 800; text-transform: uppercase; background: var(--fault-soft); color: var(--fault); border-radius: 5px; padding: 0 6px; margin-right: 6px; }
+.jn-sweeprow { border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: var(--surface-2); }
+.jn-sweeprow.cur { border-color: var(--accent); }
+.jn-sweephead { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; font-size: 13px; }
+.jn-strip { display: flex; flex-wrap: wrap; gap: 3px; }
+.jn-pt { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--line); font-size: 13px; font-weight: 800; line-height: 1; padding: 0; background: var(--surface); }
+.jn-pt.ok { color: var(--hit); background: var(--hit-soft); border-color: var(--hit); }
+.jn-pt.bad { color: var(--fault); background: var(--fault-soft); border-color: var(--fault); }
+.jn-pt.now { outline: 3px solid var(--accent); outline-offset: 1px; }
+.jn-cellkey { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 5px; margin-right: 6px; font-style: normal; font-weight: 800; border: 1px solid var(--line); vertical-align: -4px; }
+.jn-cellkey.ok { color: var(--hit); background: var(--hit-soft); border-color: var(--hit); }
+.jn-cellkey.bad { color: var(--fault); background: var(--fault-soft); border-color: var(--fault); }
+.jn-code { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.45; width: 100%; }

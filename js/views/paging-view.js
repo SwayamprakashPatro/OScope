@@ -11,8 +11,11 @@
   const SERIES = {
     fifo: { color: '#E58A00', marker: 'circle', dash: '' },
     lru: { color: '#2F6BFF', marker: 'square', dash: '7 4' },
-    opt: { color: '#0FA36B', marker: 'diamond', dash: '2 4' }
+    opt: { color: '#0FA36B', marker: 'diamond', dash: '2 4' },
+    clock: { color: '#B046D6', marker: 'triangle', dash: '10 3 2 3' }
   };
+  // The chart plots only these algorithms (the engine's CHART_ALGOS); the table lists every algorithm.
+  const CHART = G.ALGOS.filter((a) => G.CHART_ALGOS.includes(a.id));
 
   // marker(): draw a chart point as a circle, square or diamond, with a tooltip. Series are told apart by
   // shape and dash pattern as well as colour, so the chart still works for colour-blind readers.
@@ -21,6 +24,7 @@
     let n;
     if (kind === 'circle') n = svg('circle', Object.assign({ cx: x, cy: y, r: 5 }, common));
     else if (kind === 'square') n = svg('rect', Object.assign({ x: x - 4.5, y: y - 4.5, width: 9, height: 9, rx: 1.5 }, common));
+    else if (kind === 'triangle') n = svg('path', Object.assign({ d: 'M' + x + ' ' + (y - 6.5) + 'L' + (x + 6) + ' ' + (y + 5) + 'L' + (x - 6) + ' ' + (y + 5) + 'Z' }, common));
     else n = svg('path', Object.assign({ d: 'M' + x + ' ' + (y - 6.5) + 'L' + (x + 6.5) + ' ' + y + 'L' + x + ' ' + (y + 6.5) + 'L' + (x - 6.5) + ' ' + y + 'Z' }, common));
     n.appendChild(svg('title', { text: title }));
     return n;
@@ -31,7 +35,7 @@
   // (left: memory animation, explanation, trace table; right: the editable problem).
   function mount(host) {
     // Starting problem; your edits persist in localStorage.
-    const defaults = () => ({ refsText: G.PRESETS[0].refs, frames: 3, algo: 'fifo', optTie: 'fifo', tab: 'viz' });
+    const defaults = () => ({ refsText: G.PRESETS[0].refs, frames: 3, algo: 'fifo', optTie: 'fifo', nruClear: 4, tab: 'viz' });
     let state = Object.assign(defaults(), store.get(KEY, {}));
     if (!G.BY_ID[state.algo]) state = defaults();
 
@@ -122,8 +126,16 @@
             el('button', { type: 'button', class: 'btn', onclick: randomize }, icon('dice', 16), 'Generate')))));
     colSide.appendChild(probCard);
 
-    // renderSettings(): only Optimal has an option (how to break ties between never-used-again pages).
+    // renderSettings(): Optimal has a tie option; NRU has how often its reference bits are cleared.
     function renderSettings() {
+      if (state.algo === 'nru') {
+        settings.hidden = false;
+        settings.replaceChildren(
+          el('label', { for: 'pg-nru' }, 'Clear all reference bits every N references'),
+          el('input', { type: 'number', id: 'pg-nru', min: 1, max: 20, step: 1, value: state.nruClear, oninput: (e) => { state.nruClear = e.target.value; save(); recompute(); } }),
+          el('p', { class: 'hint' }, 'A small N forgets quickly; a large N makes NRU behave like FIFO.'));
+        return;
+      }
       if (state.algo !== 'opt') { settings.replaceChildren(); settings.hidden = true; return; }
       settings.hidden = false;
       settings.replaceChildren(
@@ -168,7 +180,7 @@
       errBox.hidden = v.ok; errBox.replaceChildren(...v.errors.map((m) => el('div', null, m)));
       if (!v.ok) return;
       refs = parsed.tokens; valid = true;
-      sim = G.simulate(refs, +state.frames, state.algo, { optTie: state.optTie });
+      sim = G.simulate(refs, +state.frames, state.algo, { optTie: state.optTie, nruClear: state.nruClear });
       buildStage(); buildTrace();
       if (state.tab === 'cmp') buildCompare();
       player.setStops(sim.steps.map((_, i) => i), Math.min(player.pos, sim.steps.length - 1));
@@ -307,7 +319,7 @@
     // buildCompare(): run FIFO, LRU and Optimal on the same string, show the fault table, then sweep the number
     // of frames to draw the faults-vs-frames chart. Any rise in faults when frames increase is Belady's anomaly.
     function buildCompare() {
-      const cfg = { optTie: state.optTie };
+      const cfg = { optTie: state.optTie, nruClear: state.nruClear };
       const runs = G.ALGOS.map((a) => G.simulate(refs, +state.frames, a.id, cfg));
       const best = Math.min.apply(null, runs.map((r) => r.faults));
       const table = el('div', { class: 'tbl-wrap' }, el('table', { class: 'tbl' },
@@ -319,22 +331,22 @@
       // How many frame counts to plot (at least a few beyond the current setting).
       const maxF = clamp(Math.max(+state.frames + 3, 7), 4, 10);
       const sweeps = {};
-      G.ALGOS.forEach((a) => { sweeps[a.id] = G.sweep(refs, a.id, maxF, cfg); });
+      CHART.forEach((a) => { sweeps[a.id] = G.sweep(refs, a.id, maxF, cfg); });
       const anomalies = {};
-      G.ALGOS.forEach((a) => { anomalies[a.id] = G.anomalies(sweeps[a.id]); });
+      CHART.forEach((a) => { anomalies[a.id] = G.anomalies(sweeps[a.id]); });
       const notes = [];
-      G.ALGOS.forEach((a) => anomalies[a.id].forEach((an) =>
+      CHART.forEach((a) => anomalies[a.id].forEach((an) =>
         notes.push(a.short + ': with ' + an.from + ' frame' + (an.from === 1 ? '' : 's') + ' there are ' + an.before + ' faults, but with ' + an.to + ' frames there are ' + an.after + '. More memory made it worse.')));
 
       cmpHost.replaceChildren(
         el('div', { class: 'card' },
-          el('div', { class: 'card-head' }, el('h3', null, 'All three on your problem'), el('span', { class: 'sub' }, state.frames + ' frames, ' + refs.length + ' references')),
+          el('div', { class: 'card-head' }, el('h3', null, 'Every algorithm on your problem'), el('span', { class: 'sub' }, state.frames + ' frames, ' + refs.length + ' references')),
           table,
           el('p', { class: 'note', style: { marginTop: '10px' } }, 'Optimal is the lower bound: no algorithm can have fewer faults. The gap between it and the others is what a smarter guess could still save.')),
         el('div', { class: 'card' },
           el('div', { class: 'card-head' }, el('h3', null, 'Page faults as memory grows'), el('span', { class: 'sub' }, 'Your reference string, 1 to ' + maxF + ' frames')),
           chart(sweeps, anomalies, maxF),
-          el('div', { class: 'chart-legend' }, G.ALGOS.map((a) => el('span', null,
+          el('div', { class: 'chart-legend' }, CHART.map((a) => el('span', null,
             svg('svg', { width: 34, height: 12, viewBox: '0 0 34 12', 'aria-hidden': 'true' },
               svg('line', { x1: 0, y1: 6, x2: 34, y2: 6, stroke: SERIES[a.id].color, 'stroke-width': 2.5, 'stroke-dasharray': SERIES[a.id].dash }),
               marker(SERIES[a.id].marker, 17, 6, SERIES[a.id].color, a.short)), a.short))),
@@ -349,7 +361,7 @@
     function chart(sweeps, anomalies, maxF) {
       const W = 640, H = 300, m = { l: 44, r: 62, t: 14, b: 44 };
       const iw = W - m.l - m.r, ih = H - m.t - m.b;
-      const peak = Math.max.apply(null, [].concat.apply([], G.ALGOS.map((a) => sweeps[a.id])));
+      const peak = Math.max.apply(null, [].concat.apply([], CHART.map((a) => sweeps[a.id])));
       // Pick a tidy Y-axis step from the largest value, then round the axis maximum up to a multiple of it.
       const stepY = peak <= 6 ? 1 : peak <= 12 ? 2 : peak <= 30 ? 5 : 10;
       const yMax = Math.max(stepY, Math.ceil(peak / stepY) * stepY);
@@ -368,17 +380,17 @@
       const cf = clamp(+state.frames, 1, maxF);
       root.appendChild(svg('line', { x1: X(cf), x2: X(cf), y1: m.t, y2: m.t + ih, stroke: 'var(--accent)', 'stroke-width': 1.5, 'stroke-dasharray': '4 3', opacity: 0.7 }));
       root.appendChild(svg('text', { x: X(cf), y: m.t - 2, 'text-anchor': 'middle', fill: 'var(--accent)', style: 'fill:var(--accent)', text: 'yours' }));
-      G.ALGOS.forEach((a) => {
+      CHART.forEach((a) => {
         const s = SERIES[a.id], vals = sweeps[a.id];
         root.appendChild(svg('polyline', { points: vals.map((v, i) => X(i + 1) + ',' + Y(v)).join(' '), fill: 'none', stroke: s.color, 'stroke-width': 2.5, 'stroke-dasharray': s.dash, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
       });
-      G.ALGOS.forEach((a) => {
+      CHART.forEach((a) => {
         const s = SERIES[a.id], vals = sweeps[a.id];
         anomalies[a.id].forEach((an) => root.appendChild(svg('circle', { cx: X(an.to), cy: Y(an.after), r: 11, fill: 'none', stroke: 'var(--fault)', 'stroke-width': 2 }, svg('title', { text: 'Belady’s anomaly: ' + a.short + ' gets worse going from ' + an.from + ' to ' + an.to + ' frames' }))));
         vals.forEach((v, i) => root.appendChild(marker(s.marker, X(i + 1), Y(v), s.color, a.short + ', ' + (i + 1) + ' frame' + (i ? 's' : '') + ': ' + v + ' faults')));
       });
       // direct labels at the right end, nudged apart if they would collide
-      const ends = G.ALGOS.map((a) => ({ a, y: Y(sweeps[a.id][maxF - 1]) })).sort((p, q) => p.y - q.y);
+      const ends = CHART.map((a) => ({ a, y: Y(sweeps[a.id][maxF - 1]) })).sort((p, q) => p.y - q.y);
       for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 14) ends[i].y = ends[i - 1].y + 14;
       ends.forEach((e) => root.appendChild(svg('text', { x: m.l + iw + 12, y: e.y + 4, text: e.a.short, style: 'fill:var(--ink)', 'font-weight': 600 })));
       return root;

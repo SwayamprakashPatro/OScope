@@ -1,118 +1,33 @@
 /* Deadlock graph view (.rg-): resource-allocation graph nodes and edges, legend swatches, options. */
-.rg-graph {
-  width: 100%;
-}
-.rg-svg {
-  width: 100%;
-  height: auto;
-  display: block;
-  overflow: visible;
-}
-.rg-edge {
-  fill: none;
-  stroke: var(--ink-2);
-  stroke-width: 2;
-  transition: opacity 0.3s;
-}
-.rg-edge.req {
-  stroke-dasharray: 7 5;
-}
-.rg-edge.asg {
-  stroke-dasharray: none;
-}
-.rg-edge.wf {
-  stroke-width: 2.4;
-}
-.rg-edge.cyc {
-  stroke: var(--warn);
-  stroke-width: 3.4;
-}
-.rg-edge.dead {
-  stroke: var(--fault);
-  stroke-width: 3.4;
-}
-.rg-edge.gone {
-  opacity: 0.12;
-}
-.rg-elabel {
-  font-size: 11px;
-  fill: var(--ink-3);
-}
-.rg-nt {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 600;
-  pointer-events: none;
-}
-.rg-node {
-  transition: opacity 0.3s;
-}
-.rg-node.gone {
-  opacity: 0.4;
-}
-.rg-node.now circle {
-  stroke: var(--accent);
-  stroke-width: 4;
-}
-.rg-rbox {
-  fill: var(--surface-2);
-  stroke: var(--ink-2);
-  stroke-width: 2;
-}
-.rg-rt {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 600;
-  fill: var(--ink);
-  text-anchor: middle;
-}
-.rg-dot {
-  fill: var(--surface);
-  stroke: var(--ink-2);
-  stroke-width: 1.5;
-}
-.rg-dot.held {
-  fill: var(--ink-2);
-}
-.rg-flag {
-  font-size: 10.5px;
-  font-weight: 800;
-  fill: var(--fault);
-  letter-spacing: 0.05em;
-}
-.rg-flag.ok {
-  fill: var(--hit);
-}
-.rg-sw {
-  display: inline-block;
-  width: 24px;
-  height: 0;
-  border-top: 3px solid var(--ink-2);
-  margin-right: 6px;
-  vertical-align: middle;
-}
-.rg-sw.req {
-  border-top-style: dashed;
-}
-.rg-sw.cyc {
-  border-top-color: var(--warn);
-}
-.rg-sw.dead {
-  border-top-color: var(--fault);
-}
-.rg-check {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-}
-.rg-check input {
-  width: auto;
-}
-.rg-cond th,
-.rg-cond td {
-  text-align: left;
-  font-family: inherit;
-  font-size: 14px;
-  vertical-align: top;
-}
+.rg-graph { width: 100%; }
+.rg-svg { width: 100%; height: auto; display: block; overflow: visible; }
+.rg-edge { fill: none; stroke: var(--ink-2); stroke-width: 2; transition: opacity 0.3s; }
+.rg-edge.req { stroke-dasharray: 7 5; }
+.rg-edge.asg { stroke-dasharray: none; }
+.rg-edge.wf { stroke-width: 2.4; }
+.rg-edge.cyc { stroke: var(--warn); stroke-width: 3.4; }
+.rg-edge.dead { stroke: var(--fault); stroke-width: 3.4; }
+.rg-edge.gone { opacity: 0.12; }
+.rg-elabel { font-size: 11px; fill: var(--ink-3); }
+.rg-nt { font-family: var(--font-mono); font-size: 13px; font-weight: 600; pointer-events: none; }
+.rg-node { transition: opacity 0.3s; }
+.rg-node.gone { opacity: 0.4; }
+.rg-node.now circle { stroke: var(--accent); stroke-width: 4; }
+.rg-rbox { fill: var(--surface-2); stroke: var(--ink-2); stroke-width: 2; }
+.rg-rt { font-family: var(--font-mono); font-size: 13px; font-weight: 600; fill: var(--ink); text-anchor: middle; }
+.rg-dot { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.5; }
+.rg-dot.held { fill: var(--ink-2); }
+.rg-flag { font-size: 10.5px; font-weight: 800; fill: var(--fault); letter-spacing: 0.05em; }
+.rg-flag.ok { fill: var(--hit); }
+.rg-sw { display: inline-block; width: 24px; height: 0; border-top: 3px solid var(--ink-2); margin-right: 6px; vertical-align: middle; }
+.rg-sw.req { border-top-style: dashed; }
+.rg-sw.cyc { border-top-color: var(--warn); }
+.rg-sw.dead { border-top-color: var(--fault); }
+.rg-check { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+.rg-check input { width: auto; }
+.rg-cond th, .rg-cond td { text-align: left; font-family: inherit; font-size: 14px; vertical-align: top; }
+
+/* Recovery card */
+.rg-steps { margin: 10px 0; padding-left: 22px; line-height: 1.55; color: var(--ink-2); }
+.rg-steps li { margin: 6px 0; }
+.rg-after { font-weight: 600; color: var(--ink); }

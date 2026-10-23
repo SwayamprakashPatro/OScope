@@ -1,205 +1,35 @@
 /* Memory allocation view (.ma-): memory bar with blocks and holes, fit pointers, operations table, compaction. */
-.ma-barwrap {
-  position: relative;
-  padding-top: 22px;
-}
-.ma-bar {
-  position: relative;
-  height: 76px;
-  border: 1.5px solid var(--ink-2);
-  border-radius: 10px;
-  background: var(--surface-2);
-  overflow: hidden;
-}
-.ma-block,
-.ma-hole {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  box-shadow: inset -2px 0 0 var(--surface);
-}
-.ma-block {
-  transition:
-    left 0.6s cubic-bezier(0.3, 0.8, 0.3, 1),
-    width 0.5s ease;
-  z-index: 1;
-}
-.ma-block b {
-  font-family: var(--font-display);
-  font-size: 16px;
-  line-height: 1.1;
-}
-.ma-block small,
-.ma-hole small {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  opacity: 0.9;
-}
-.ma-block.is-new {
-  animation: pop 0.5s cubic-bezier(0.3, 1.5, 0.5, 1);
-}
-.ma-hole {
-  background: repeating-linear-gradient(
-    135deg,
-    transparent 0 5px,
-    var(--line) 5px 7px
-  );
-  color: var(--ink-2);
-}
-.ma-hole.is-small {
-  outline: 2px dashed var(--fault);
-  outline-offset: -3px;
-}
-.ma-hole.is-fit {
-  outline: 2px dashed var(--warn);
-  outline-offset: -3px;
-}
-.ma-hole.is-pick {
-  outline: 3px solid var(--hit);
-  outline-offset: -3px;
-  background-color: var(--hit-soft);
-}
-.ma-int {
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  background: repeating-linear-gradient(
-    45deg,
-    rgba(0, 0, 0, 0.35) 0 3px,
-    transparent 3px 7px
-  );
-  transition: width 0.3s;
-}
-.ma-marks {
-  position: relative;
-  height: 22px;
-}
-.ma-tag {
-  position: absolute;
-  transform: translateX(-50%);
-  top: 3px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 0 6px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  white-space: nowrap;
-}
-.ma-tag.pick {
-  border-color: var(--hit);
-  color: var(--hit);
-  background: var(--hit-soft);
-}
-.ma-tag.fit {
-  border-color: var(--warn);
-  color: var(--warn);
-}
-.ma-tag.small {
-  border-color: var(--fault);
-  color: var(--fault);
-}
-.ma-axis {
-  position: relative;
-  height: 16px;
-}
-.ma-tick {
-  position: absolute;
-  transform: translateX(-50%);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ink-3);
-}
-.ma-tick:first-child {
-  transform: none;
-}
-.ma-ptr {
-  position: absolute;
-  top: 0;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 11px;
-  color: var(--accent);
-  font-weight: 600;
-  transition: left 0.5s;
-  z-index: 3;
-  white-space: nowrap;
-}
-.ma-ptr i {
-  font-style: normal;
-  line-height: 1;
-  margin-top: -1px;
-}
-.ma-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 18px;
-  font-size: 13px;
-  color: var(--ink-2);
-  margin-top: 6px;
-}
-.ma-sw {
-  display: inline-block;
-  width: 18px;
-  height: 12px;
-  border: 1px solid var(--ink-3);
-  border-radius: 3px;
-  margin-right: 6px;
-  vertical-align: -1px;
-}
-.ma-sw.hole {
-  background: repeating-linear-gradient(
-    135deg,
-    transparent 0 3px,
-    var(--line) 3px 5px
-  );
-}
-.ma-sw.int {
-  background: repeating-linear-gradient(
-    45deg,
-    var(--ink-2) 0 2px,
-    transparent 2px 5px
-  );
-}
-.ma-warn {
-  border-color: var(--fault);
-  background: var(--fault-soft);
-}
-.ma-ops input,
-.ma-ops select {
-  width: 100%;
-  padding: 5px 4px;
-  font-family: var(--font-mono);
-  text-align: center;
-}
-.ma-ops td:nth-child(2) {
-  text-align: left;
-  font-size: 13px;
-  white-space: nowrap;
-}
-.ma-h4 {
-  font-family: var(--font-display);
-  font-size: 15px;
-  margin: 16px 0 6px;
-}
-.ma-cmp {
-  margin-bottom: 8px;
-}
-.ma-cmp b {
-  font-family: var(--font-display);
-}
-.ma-cmp .ma-barwrap {
-  padding-top: 6px;
-}
-.ma-cmp .ma-bar {
-  height: 44px;
-}
+.ma-barwrap { position: relative; padding-top: 22px; }
+.ma-bar { position: relative; height: 76px; border: 1.5px solid var(--ink-2); border-radius: 10px; background: var(--surface-2); overflow: hidden; }
+.ma-block, .ma-hole { position: absolute; top: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; box-shadow: inset -2px 0 0 var(--surface); }
+.ma-block { transition: left 0.6s cubic-bezier(0.3, 0.8, 0.3, 1), width 0.5s ease; z-index: 1; }
+.ma-block b { font-family: var(--font-display); font-size: 16px; line-height: 1.1; }
+.ma-block small, .ma-hole small { font-family: var(--font-mono); font-size: 11px; }
+.ma-block.is-new { animation: pop 0.5s cubic-bezier(0.3, 1.5, 0.5, 1); }
+.ma-hole { background: repeating-linear-gradient(135deg, transparent 0 5px, var(--line) 5px 7px); color: var(--ink-2); }
+.ma-hole.is-small { outline: 2px dashed var(--fault); outline-offset: -3px; }
+.ma-hole.is-fit { outline: 2px dashed var(--warn); outline-offset: -3px; }
+.ma-hole.is-pick { outline: 3px solid var(--hit); outline-offset: -3px; background-color: var(--hit-soft); }
+.ma-int { position: absolute; right: 0; top: 0; bottom: 0; background: repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.35) 0 3px, transparent 3px 7px); transition: width 0.3s; }
+.ma-marks { position: relative; height: 22px; }
+.ma-tag { position: absolute; transform: translateX(-50%); top: 3px; font-family: var(--font-mono); font-size: 11px; font-weight: 600; padding: 0 6px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); white-space: nowrap; }
+.ma-tag.pick { border-color: var(--hit); color: var(--hit); background: var(--hit-soft); }
+.ma-tag.fit { border-color: var(--warn); color: var(--warn); }
+.ma-tag.small { border-color: var(--fault); color: var(--fault); }
+.ma-axis { position: relative; height: 16px; }
+.ma-tick { position: absolute; transform: translateX(-50%); font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); }
+.ma-tick:first-child { transform: none; }
+.ma-ptr { position: absolute; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--accent); font-weight: 600; transition: left 0.5s; z-index: 3; white-space: nowrap; }
+.ma-ptr i { font-style: normal; line-height: 1; margin-top: -1px; }
+.ma-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--ink-2); margin-top: 6px; }
+.ma-sw { display: inline-block; width: 18px; height: 12px; border: 1px solid var(--ink-3); border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.ma-sw.hole { background: repeating-linear-gradient(135deg, transparent 0 3px, var(--line) 3px 5px); }
+.ma-sw.int { background: repeating-linear-gradient(45deg, var(--ink-2) 0 2px, transparent 2px 5px); }
+.ma-warn { border-color: var(--fault); background: var(--fault-soft); }
+.ma-ops input, .ma-ops select { width: 100%; padding: 5px 4px; font-family: var(--font-mono); text-align: center; }
+.ma-ops td:nth-child(2) { text-align: left; font-size: 13px; white-space: nowrap; }
+.ma-h4 { font-family: var(--font-display); font-size: 15px; margin: 16px 0 6px; }
+.ma-cmp { margin-bottom: 8px; }
+.ma-cmp b { font-family: var(--font-display); }
+.ma-cmp .ma-barwrap { padding-top: 6px; }
+.ma-cmp .ma-bar { height: 44px; }

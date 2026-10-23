@@ -1,7 +1,7 @@
 const S = require('../js/engines/sync.js');
 let pass = 0, fail = 0;
 const eq = (n, got, want) => { const ok = JSON.stringify(got) === JSON.stringify(want); ok ? pass++ : fail++; console.log((ok ? 'PASS ' : 'FAIL ') + n + (ok ? '' : ' got=' + JSON.stringify(got) + ' want=' + JSON.stringify(want))); };
-const load = (id) => { const p = S.PRESETS.find((x) => x.id === id); const d = S.parseDecls({ vars: p.vars, sems: p.sems, muts: p.muts, cap: p.cap, expect: p.expect }); const g = S.parseProgram(p.prog, d.decl); return { d, g, p }; };
+const load = (id) => { const p = S.PRESETS.find((x) => x.id === id); const d = S.parseDecls({ vars: p.vars, sems: p.sems, muts: p.muts, conds: p.conds, mon: p.mon, cap: p.cap, expect: p.expect }); const g = S.parseProgram(p.prog, d.decl); return { d, g, p }; };
 const explore = (id) => { const { d, g } = load(id); return S.explore(g.threads, d.decl); };
 const kinds = (ex) => ex.outcomes.map((o) => o.kind + (o.kind === 'violation' ? ':' + o.label.slice(0, 12) : ''));
 S.PRESETS.forEach((p) => { const { d, g } = load(p.id); eq('Preset parses cleanly: ' + p.id, d.errors.concat(g.errors), []); });

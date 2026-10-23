@@ -12,7 +12,7 @@
   // interleaving' (the exhaustive explorer). The right panel holds the declarations and the program text.
   function mount(host) {
     // fromPreset(p): turn an example into editable state; `picks` is the list of manual scheduling choices.
-    const fromPreset = (p) => ({ vars: p.vars, sems: p.sems, muts: p.muts, cap: String(p.cap), expect: p.expect, prog: p.prog, picks: [] });
+    const fromPreset = (p) => ({ vars: p.vars, sems: p.sems, muts: p.muts, conds: p.conds || '', mon: p.mon || 'mesa', cap: String(p.cap), expect: p.expect, prog: p.prog, picks: [] });
     // State: declarations, program text, scheduler mode (manual / random / round-robin), seed, time slice, tab.
     let state = Object.assign(fromPreset(S.PRESETS[0]), { mode: 'manual', seed: 1, quantum: 1, tab: 'run' }, store.get(KEY, {}));
     if (!Array.isArray(state.picks)) state.picks = [];
@@ -75,15 +75,21 @@
         txt('vars', 'Shared variables', 'NAME=value, for example X=0', 'sy-vars'),
         txt('sems', 'Semaphores', 'NAME=starting value, for example empty=2', 'sy-sems'),
         txt('muts', 'Mutexes', 'names only, for example M, F0', 'sy-muts'),
+        txt('conds', 'Condition variables (monitors)', 'names only, for example notEmpty', 'sy-conds'),
+        el('div', { class: 'field' }, el('label', { for: 'sy-mon' }, 'Signal rules for condition variables'),
+          el('select', { id: 'sy-mon', onchange: (e) => { state.mon = e.target.value; save(); schedule2(); } },
+            el('option', { value: 'mesa', selected: state.mon !== 'hoare' }, 'Mesa: signaller keeps running, sleeper re-checks'),
+            el('option', { value: 'hoare', selected: state.mon === 'hoare' }, 'Hoare: sleeper runs at once, signaller steps aside')),
+          el('p', { class: 'hint' }, 'Only matters for cwait / csignal. Real systems (Java, pthreads) use Mesa, which is why a woken thread must re-check its condition in a while loop.')),
         el('div', { class: 'grid2' }, txt('cap', 'Buffer size (0 = none)', null, 'sy-cap'), txt('expect', 'Expected result', 'for example X=2', 'sy-exp')),
         el('div', { class: 'field' }, el('label', { for: 'sy-prog' }, 'Threads and their programs'), progBox,
-          el('p', { class: 'hint' }, 'thread NAME [xN repeats]. Instructions: load r X, add r 1, store X r, set X 0, inc X, dec X, wait S, signal S, lock M, unlock M, put, get, enter/leave cs|read|write, if X == 1 (next line runs only if true), work label.')));
+          el('p', { class: 'hint' }, 'thread NAME [xN repeats]. Instructions: load r X, add r 1, store X r, set X 0, inc X, dec X, wait S, signal S, lock M, unlock M, put, get, enter/leave cs|read|write, if X == 1 (next line runs only if true), goto LABEL (with NAME: lines) makes loops, several if lines in a row mean AND, cwait C M / csignal C / cbroadcast C for monitors, work label.')));
     }
 
     // recompute(): parse declarations and program (line-numbered errors), then run the chosen scheduler.
     // If a manual pick turns out to be impossible, the engine stops at it and the picks list is trimmed.
     function recompute() {
-      const d = S.parseDecls({ vars: state.vars, sems: state.sems, muts: state.muts, cap: state.cap, expect: state.expect });
+      const d = S.parseDecls({ vars: state.vars, sems: state.sems, muts: state.muts, conds: state.conds, mon: state.mon, cap: state.cap, expect: state.expect });
       const g = d.errors.length ? { errors: [], threads: [] } : S.parseProgram(state.prog, d.decl);
       const errs = d.errors.concat(g.errors);
       errBox.hidden = !errs.length; errBox.replaceChildren(...errs.map((m) => el('div', null, m)));
@@ -129,7 +135,9 @@
       const f = sim.frames[i], st = f.st, ev = f.ev;
       threadsSlot.replaceChildren(...prog.map((t, ti) => {
         const th = st.threads[ti], fill = colorFor(ti);
-        const status = th.state === 'done' ? 'done' : th.state === 'blocked' ? 'blocked on ' + th.on : 'ready';
+        // A ready thread sitting on `spin L` while L is held is busy-waiting: ready, but wasting its steps.
+        const cur = t.code[th.pc], spinning = th.state === 'ready' && cur && cur.op === 'spin' && st.vars[cur.x] !== 0;
+        const status = th.state === 'done' ? 'done' : th.state === 'blocked' ? 'blocked on ' + th.on : spinning ? 'spinning on ' + cur.x : 'ready';
         const lines = t.code.map((c, k) => el('li', { class: (k === th.pc && th.state !== 'done' ? 'is-pc ' : '') + (ev && ev.ti === ti && ev.pc === k ? 'is-ran' : '') }, el('i', null, k === th.pc && th.state !== 'done' ? '▶' : ''), c.text));
         const regs = Object.keys(th.regs).map((r) => r + '=' + th.regs[r]).join('  ');
         return el('div', { class: 'sy-thread st-' + th.state + (ev && ev.ti === ti ? ' is-now' : '') },
@@ -142,30 +150,34 @@
       const tiles = [];
       Object.keys(st.vars).forEach((k) => tiles.push(tile('variable ' + k, el('b', { class: 'mono sy-big' }, st.vars[k]))));
       Object.keys(st.sems).forEach((k) => tiles.push(tile('semaphore ' + k, el('div', null, el('b', { class: 'mono sy-big' }, st.sems[k].v), el('div', { class: 'sy-q' }, st.sems[k].q.length ? ['queue: ', ...st.sems[k].q.map(chip)] : 'queue empty')))));
-      Object.keys(st.muts).forEach((k) => tiles.push(tile('mutex ' + k, el('div', null, st.muts[k].owner != null ? el('b', { class: 'sy-owner' }, 'held by ', chip(st.muts[k].owner)) : el('b', { class: 'sy-free' }, 'free'), el('div', { class: 'sy-q' }, st.muts[k].q.length ? ['waiting: ', ...st.muts[k].q.map(chip)] : 'no waiters')))));
+      Object.keys(st.muts).forEach((k) => tiles.push(tile('mutex ' + k, el('div', null, st.muts[k].owner != null ? el('b', { class: 'sy-owner' }, 'held by ', chip(st.muts[k].owner)) : el('b', { class: 'sy-free' }, 'free'), el('div', { class: 'sy-q' }, st.muts[k].q.length ? ['waiting: ', ...st.muts[k].q.map(chip)] : 'no waiters'), st.muts[k].urg.length ? el('div', { class: 'sy-q' }, ['urgent (stepped aside): ', ...st.muts[k].urg.map(chip)]) : null))));
+      Object.keys(st.conds).forEach((k) => tiles.push(tile('condition ' + k, el('div', { class: 'sy-q' }, st.conds[k].q.length ? ['asleep: ', ...st.conds[k].q.map((w) => chip(w.ti))] : 'nobody asleep'))));
       if (st.buf.cap) tiles.push(tile('buffer', el('div', null, el('div', { class: 'sy-slots' }, Array.from({ length: st.buf.cap }, (_, k) => el('i', { class: k < st.buf.count ? 'full' : '' }))), el('div', { class: 'sy-q' }, st.buf.count + ' of ' + st.buf.cap + ' slots used'))));
       const occ = ['cs', 'read', 'write'].filter((t) => st.occ[t].length);
       if (occ.length || /enter /.test(state.prog)) tiles.push(tile('regions', el('div', { class: 'sy-q' }, occ.length ? occ.map((t) => el('div', null, t + ': ', ...st.occ[t].map(chip))) : 'nobody inside'), (st.violation && st.violation.kind === 'exclusion') ? 'bad' : ''));
       sharedSlot.replaceChildren(...tiles);
       const kids = [el('p', { class: 'muted' }, i === 0 ? 'Before any instruction' : 'Instruction ' + i + ' of ' + (sim.frames.length - 1)), el('p', null, f.text)];
+      if (ev && ev.spin) kids.push(el('div', { class: 'callout' }, ev.id + ' is spinning: it is still ready, so the scheduler may pick it again, and every such step is CPU time wasted. A blocked thread would use none.'));
+      if (ev && ev.loop) kids.push(el('div', { class: 'callout' }, ev.id + ' jumped back up: it is looping (busy-waiting). It stays READY, so the scheduler can pick it again and each pass is CPU time spent for nothing. Correct software locks (Peterson, Dekker, bakery) rely on such loops.'));
+      if (ev && ev.lost) kids.push(el('div', { class: 'callout callout-bad' }, 'Lost signal: nobody was asleep, so nothing happened. Unlike a semaphore, a condition variable remembers nothing.'));
       if (ev && ev.blocked) kids.push(el('div', { class: 'callout' }, ev.id + ' cannot continue, so the scheduler must pick someone else. A blocked thread uses no CPU.'));
       whyBody.replaceChildren(...kids);
       // Swimlane trace: one row per executed instruction, one column per thread, blocked steps marked.
       // trace
       const head = el('tr', null, el('th', null, '#'), prog.map((t, ti) => el('th', null, el('span', { class: 'sy-dot', style: { background: colorFor(ti) } }), t.id)));
-      const rows = sim.frames.slice(1, i + 1).map((fr, k) => el('tr', { class: (k === i - 1 ? 'now ' : '') + (fr.ev.blocked ? 'blk' : '') }, el('td', { class: 'muted' }, k + 1), prog.map((t, ti) => el('td', { class: 'sy-cell' }, fr.ev.ti === ti ? (fr.ev.text + (fr.ev.blocked ? '  ⏸ blocked' : '')) : ''))));
+      const rows = sim.frames.slice(1, i + 1).map((fr, k) => el('tr', { class: (k === i - 1 ? 'now ' : '') + (fr.ev.blocked || fr.ev.spin ? 'blk' : '') }, el('td', { class: 'muted' }, k + 1), prog.map((t, ti) => el('td', { class: 'sy-cell' }, fr.ev.ti === ti ? (fr.ev.text + (fr.ev.blocked ? '  ⏸ blocked' : '')) : ''))));
       traceSlot.replaceChildren(el('table', { class: 'tbl sy-tbl' }, el('thead', null, head), el('tbody', null, rows.length ? rows : el('tr', null, el('td', { colspan: prog.length + 1, class: 'muted' }, 'No instructions run yet.')))));
       // Outcome of the full run: finished normally / deadlock (who waits on what) / violation message.
       // verdict
       const last = i === sim.frames.length - 1, term = sim.term;
       const fin = sim.frames[sim.frames.length - 1].st;
       let box;
-      if (!term) box = el('p', { class: 'note' }, state.mode === 'manual' ? 'Still running. Keep picking threads until every thread finishes, or something goes wrong.' : sim.status === 'limit' ? 'Stopped after ' + S.LIMITS.maxSteps + ' steps.' : 'Still running.');
+      if (!term) box = el('p', { class: 'note' }, state.mode === 'manual' ? 'Still running. Keep picking threads until every thread finishes, or something goes wrong.' : sim.status === 'limit' ? 'Stopped after ' + S.LIMITS.maxSteps + ' steps. If the threads are looping, press Explore to find out whether the program can ever finish.' : 'Still running.');
       else if (term.kind === 'done') box = el('div', { class: 'callout callout-good' }, 'Finished normally. Final shared values: ' + (Object.keys(fin.vars).map((k) => k + '=' + fin.vars[k]).join(', ') || 'none') + (Object.keys(decl.expect).length ? ' (matches the expected result).' : '.'));
       else if (term.kind === 'deadlock') box = el('div', { class: 'callout callout-bad' }, 'DEADLOCK. ' + term.waits.map((w) => w.id + ' waits on ' + w.on + (w.holder ? ' (held by ' + w.holder + ')' : '')).join('; ') + '. No thread can ever run again.');
       else box = el('div', { class: 'callout callout-bad' }, term.v.msg);
       verdictCard.replaceChildren(el('div', { class: 'card-head' }, el('h3', null, 'Outcome of this schedule'), last ? null : el('span', { class: 'sub' }, 'Shown for the full run')), box,
-        sim.picks.length ? el('p', { class: 'hint mono', style: { marginTop: '8px' } }, 'Schedule: ' + sim.picks.join(' ')) : null);
+        ...(sim.picks.length ? [el('p', { class: 'hint mono', style: { marginTop: '8px' } }, 'Schedule: ' + sim.picks.join(' '))] : []));
     }
 
     // renderExplore(): the explorer tab. Runs S.explore() on demand and lists every distinct outcome (bad ones
@@ -180,7 +192,7 @@
         kids.push(el('div', { class: 'stats' }, el('div', { class: 'stat' }, el('span', null, 'States visited'), el('b', null, result.states + (result.truncated ? '+' : ''))), el('div', { class: 'stat' }, el('span', null, 'Distinct outcomes'), el('b', null, result.outcomes.length)), el('div', { class: 'stat' }, el('span', null, 'Bad outcomes'), el('b', { class: bad ? 'text-bad' : 'text-good' }, bad))));
         if (result.truncated) kids.push(el('div', { class: 'callout' }, 'The search stopped at ' + S.LIMITS.maxStates + ' states, so this list may be incomplete. Shorten the programs or repeat counts.'));
         kids.push(el('div', { class: 'tbl-wrap' }, el('table', { class: 'tbl sy-out' }, el('thead', null, el('tr', null, ['Outcome', 'Shortest schedule that causes it', ''].map((h) => el('th', null, h)))),
-          el('tbody', null, result.outcomes.map((o) => el('tr', { class: o.bad ? 'bad' : '' }, el('td', null, (o.bad ? '⚠ ' : '✓ ') + o.label), el('td', { class: 'mono' }, o.path.join(' ') || '(none)'), el('td', null, el('button', { type: 'button', class: 'btn', onclick: () => { state.mode = 'manual'; state.picks = o.path.slice(); save(); setTab('run'); recompute(); } }, 'Replay'))))))));
+          el('tbody', null, result.outcomes.map((o) => el('tr', { class: o.bad ? 'bad' : '' }, el('td', null, (o.bad ? '⚠ ' : '✓ ') + o.label + (o.kind === 'stuck' ? ' (' + o.hits + ' such states)' : '')), el('td', { class: 'mono' }, o.path.join(' ') || '(none)'), el('td', null, el('button', { type: 'button', class: 'btn', onclick: () => { state.mode = 'manual'; state.picks = o.path.slice(); save(); setTab('run'); recompute(); } }, 'Replay'))))))));
         kids.push(el('p', { class: 'note' }, bad ? 'At least one bad ending is reachable. Even if random runs usually look fine, this program is not correct.' : 'Every possible interleaving ends well, so the synchronization is correct for this input.'));
       }
       expBody.replaceChildren(...kids);

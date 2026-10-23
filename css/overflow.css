@@ -1,0 +1,40 @@
+/* Buffer overflow view (.bo-): the stack frame drawn byte by byte. */
+.bo-stack { display: grid; gap: 6px; }
+.bo-region { border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; background: var(--surface-2); min-width: 0; }
+.bo-region.r-buf { border-left: 5px solid var(--accent); }
+.bo-region.r-auth { border-left: 5px solid var(--warn); }
+.bo-region.r-pad { border-left: 5px solid var(--pin); }
+.bo-region.r-canary { border-left: 5px solid var(--hit); }
+.bo-region.r-fp { border-left: 5px solid var(--ink-3); }
+.bo-region.r-ret { border-left: 5px solid var(--fault); }
+.bo-region.r-caller { border-left: 5px dashed var(--pin); opacity: 0.85; }
+.bo-rhead { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 13px; margin-bottom: 4px; }
+.bo-cells { display: flex; flex-wrap: wrap; gap: 3px; }
+.bo-cell { width: 40px; text-align: center; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); padding: 1px 0 2px; transition: background 0.25s; }
+.bo-cell small { display: block; font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-3); line-height: 1.2; }
+.bo-cell b { display: block; font-family: var(--font-mono); font-size: 13px; }
+.bo-cell span { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); height: 14px; }
+.bo-cell.touched { background: var(--accent-soft); }
+.bo-cell.r-ret.touched, .bo-cell.r-fp.touched, .bo-cell.r-canary.touched, .bo-cell.r-auth.touched { background: var(--fault-soft); border-color: var(--fault); }
+.bo-cell.changed { outline: 3px solid var(--accent); outline-offset: -1px; }
+.bo-cell.focus { box-shadow: 0 0 0 2px var(--accent); }
+.bo-sw { display: inline-block; width: 14px; height: 14px; border-radius: 4px; margin-right: 6px; vertical-align: -2px; border: 1px solid var(--line); }
+.bo-sw.r-buf { background: var(--accent); } .bo-sw.r-auth { background: var(--warn); } .bo-sw.r-canary { background: var(--hit); }
+.bo-sw.r-fp { background: var(--ink-3); } .bo-sw.r-ret { background: var(--fault); }
+.bo-code { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.45; width: 100%; }
+.bo-checks { display: grid; gap: 6px; }
+.bo-check { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13.5px; }
+.bo-check input { width: auto; }
+.bo-addr th, .bo-addr td, .bo-dist th, .bo-dist td, .bo-def th, .bo-def td { font-size: 12.5px; text-align: left; }
+.bo-addr td:nth-child(n+2) { font-family: var(--font-mono); }
+.bo-work { font-family: var(--font-mono); color: var(--ink-2); }
+.bo-def td.bo-ok { color: var(--hit); font-weight: 700; }
+.bo-def td.bo-bad { color: var(--fault); font-weight: 700; }
+.bo-def td.bo-warn { color: var(--warn); font-weight: 700; }
+.bo-def td:first-child { font-family: inherit; }
+
+.bo-addr td:first-child { white-space: normal; min-width: 90px; }
+.bo-addr th, .bo-addr td { padding-left: 6px; padding-right: 6px; }
+
+/* muted text inside tinted regions needs the stronger grey to stay readable */
+.bo-region .muted { color: var(--ink-2); }

@@ -1,0 +1,16 @@
+/* Ctrl+K search palette. Prefix: .sr- */
+.sr-overlay { position: fixed; inset: 0; z-index: 50; background: rgba(10, 16, 34, 0.45); display: flex; justify-content: center; align-items: flex-start; padding: 12vh 16px 16px; }
+.sr-overlay[hidden] { display: none; }
+.sr-box { width: min(560px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35); overflow: hidden; }
+.sr-input { width: 100%; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 16px 18px; font-size: 16px; background: transparent; color: var(--ink); outline: none; }
+.sr-list { list-style: none; margin: 0; padding: 6px; max-height: 50vh; overflow-y: auto; }
+.sr-item { display: flex; flex-direction: column; gap: 2px; padding: 9px 12px; border-radius: 10px; cursor: pointer; }
+.sr-item[aria-selected="true"] { background: var(--accent-soft); }
+.sr-main { font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+.sr-sub { font-size: 12.5px; color: var(--ink-3); }
+.sr-empty { padding: 18px 12px; color: var(--ink-3); }
+.sr-foot { display: flex; gap: 16px; padding: 8px 16px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-3); }
+.sr-btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); border-radius: 999px; padding: 6px 12px; font-size: 13px; }
+.sr-btn:hover { color: var(--ink); }
+.sr-btn kbd { font-family: var(--font-mono); font-size: 11px; border: 1px solid var(--line); border-radius: 5px; padding: 0 5px; color: var(--ink-3); }
+@media (max-width: 860px) { .sr-btn kbd { display: none; } }

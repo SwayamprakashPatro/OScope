@@ -1,0 +1,60 @@
+/* Generic distributed-systems view (.mp-): space-time diagram, node cards, results. */
+.mp-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+.mp-svg { display: block; max-width: none; }
+.mp-lane { stroke: var(--ink-3); stroke-width: 1.5; }
+.mp-lane-label { font-family: var(--font-mono); font-size: 14px; font-weight: 700; fill: var(--ink); }
+.mp-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4; }
+.mp-tick { font-size: 10.5px; fill: var(--ink-3); font-family: var(--font-mono); }
+.mp-down { fill: var(--fault); opacity: 0.22; }
+.mp-down.future { opacity: 0.08; }
+.mp-msg { stroke-width: 2; fill: none; }
+.mp-msg.flying { stroke-dasharray: 5 4; }
+.mp-msg.lost { stroke-dasharray: 2 4; }
+.mp-msg.future, .mp-mlabel.future { opacity: 0.45; }
+.mp-mlabel { font-size: 10.5px; fill: var(--ink-2); font-family: var(--font-mono); paint-order: stroke; stroke: var(--surface-2); stroke-width: 3px; }
+.mp-ev .mp-dot { fill: var(--ink); stroke: var(--surface); stroke-width: 1.5; }
+.mp-ev.send .mp-dot { fill: var(--accent); }
+.mp-ev.msg .mp-dot { fill: var(--hit); }
+.mp-ev.timer .mp-dot { fill: var(--warn); }
+.mp-ev.recover .mp-dot { fill: var(--hit); }
+.mp-ev.future { opacity: 0.5; }
+.mp-x { stroke: var(--fault); stroke-width: 2.6; fill: none; stroke-linecap: round; }
+.mp-x.drop { stroke-width: 2; }
+.mp-ring { fill: none; stroke: var(--accent); stroke-width: 2.5; }
+.mp-elabel { font-size: 10.5px; fill: var(--ink-2); font-family: var(--font-mono); }
+.mp-tag { font-size: 9.5px; fill: var(--ink-3); font-family: var(--font-mono); }
+.mp-why p { margin: 0; }
+.mp-sw { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; border-radius: 50%; background: var(--ink); border: 1px solid var(--line); }
+.mp-sw.send { background: var(--accent); } .mp-sw.recv { background: var(--hit); } .mp-sw.timer { background: var(--warn); border-radius: 2px; }
+.mp-sw.crash { background: var(--fault); clip-path: polygon(20% 0, 50% 30%, 80% 0, 100% 20%, 70% 50%, 100% 80%, 80% 100%, 50% 70%, 20% 100%, 0 80%, 30% 50%, 0 20%); border: 0; }
+.mp-sw.drop { background: transparent; border: 2px solid var(--fault); }
+.mp-code { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.45; width: 100%; }
+.mp-check { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13.5px; }
+.mp-check input { width: auto; }
+.mp-nodes { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.mp-node { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: var(--surface-2); min-width: 0; }
+.mp-node.now { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.mp-node.down { border-color: var(--fault); background: var(--fault-soft); }
+.mp-nhead { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.mp-nhead b { font-family: var(--font-mono); font-size: 16px; }
+.mp-badge { font-size: 10.5px; font-weight: 800; letter-spacing: 0.04em; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent); }
+.mp-badge.bad { background: var(--fault-soft); color: var(--fault); border-color: var(--fault); }
+.mp-nline { font-size: 12.5px; color: var(--ink-2); font-family: var(--font-mono); overflow-wrap: anywhere; }
+.mp-flight { grid-column: 1 / -1; font-size: 13px; color: var(--ink-2); }
+.mp-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 10px; }
+.mp-metrics > div { border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; background: var(--surface-2); }
+.mp-metrics small { display: block; font-size: 11px; color: var(--ink-3); }
+.mp-metrics b { font-family: var(--font-mono); font-size: 17px; }
+.mp-checks { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 4px; }
+.mp-checks li { font-size: 13.5px; }
+.mp-checks li.ok b { color: var(--hit); } .mp-checks li.bad b { color: var(--fault); }
+.mp-pair { margin: 12px 0; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+.mp-pair h4 { margin: 0 0 8px; }
+.mp-pairout p { margin: 6px 0 0; font-size: 13.5px; }
+.mp-pairhead { font-weight: 700; }
+.mp-tbl th, .mp-tbl td { text-align: left; font-size: 12.5px; }
+
+.mp-cut { fill: var(--warn); opacity: 0.25; }
+.mp-cut.future { opacity: 0.08; }
+.mp-node.cut { border-color: var(--warn); background: var(--warn-soft, #fff1d6); }
+.mp-sw.band { border-radius: 3px; background: var(--warn); opacity: 0.5; }

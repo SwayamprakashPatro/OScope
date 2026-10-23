@@ -1,53 +1,177 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-    <meta name="claude:viewport-fit-sides" content="cover" />
-    <title>OScope</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
-    />
-    <link rel="stylesheet" href="css/styles.css" />
-    <link rel="stylesheet" href="css/scheduling.css" />
-    <link rel="stylesheet" href="css/paging.css" />
-    <link rel="stylesheet" href="css/allocation.css" />
-    <link rel="stylesheet" href="css/translation.css" />
-    <link rel="stylesheet" href="css/disk.css" />
-    <link rel="stylesheet" href="css/procstate.css" />
-    <link rel="stylesheet" href="css/bankers.css" />
-    <link rel="stylesheet" href="css/rag.css" />
-    <link rel="stylesheet" href="css/sync.css" />
-  </head>
-  <body>
-    <div class="app" id="app"></div>
-    <noscript>OScope needs JavaScript to run the simulations.</noscript>
-    <script src="js/core/util.js"></script>
-    <script src="js/core/player.js"></script>
-    <script src="js/engines/scheduling.js"></script>
-    <script src="js/engines/paging.js"></script>
-    <script src="js/engines/allocation.js"></script>
-    <script src="js/engines/translation.js"></script>
-    <script src="js/engines/disk.js"></script>
-    <script src="js/engines/procstate.js"></script>
-    <script src="js/engines/bankers.js"></script>
-    <script src="js/engines/rag.js"></script>
-    <script src="js/engines/sync.js"></script>
-    <script src="js/views/scheduling-view.js"></script>
-    <script src="js/views/paging-view.js"></script>
-    <script src="js/views/allocation-view.js"></script>
-    <script src="js/views/translation-view.js"></script>
-    <script src="js/views/disk-view.js"></script>
-    <script src="js/views/procstate-view.js"></script>
-    <script src="js/views/bankers-view.js"></script>
-    <script src="js/views/rag-view.js"></script>
-    <script src="js/views/sync-view.js"></script>
-    <script src="js/app.js"></script>
-  </body>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="OScope: type your own operating-systems problem (CPU scheduling, paging, deadlock, memory, disks and more) and watch it solved step by step.">
+<meta name="theme-color" content="#2a55f0">
+<meta property="og:title" content="OScope: See inside your OS">
+<meta property="og:description" content="Interactive operating-system visualizer. Type your own problem, step through every decision.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='8' fill='%23ffffff'/%3E%3Crect x='8' y='8' width='18' height='18' rx='4' fill='none' stroke='%23131b33' stroke-width='2.2'/%3E%3Crect x='14' y='14' width='6' height='6' rx='1.5' fill='%232a55f0'/%3E%3C/svg%3E">
+<title>OScope: See inside your OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/frame.css">
+<link rel="stylesheet" href="css/search.css">
+<link rel="stylesheet" href="css/scheduling.css">
+<link rel="stylesheet" href="css/paging.css">
+<link rel="stylesheet" href="css/allocation.css">
+<link rel="stylesheet" href="css/translation.css">
+<link rel="stylesheet" href="css/disk.css">
+<link rel="stylesheet" href="css/procstate.css">
+<link rel="stylesheet" href="css/bankers.css">
+<link rel="stylesheet" href="css/rag.css">
+<link rel="stylesheet" href="css/sync.css">
+<link rel="stylesheet" href="css/gc.css">
+<link rel="stylesheet" href="css/journal.css">
+<link rel="stylesheet" href="css/overflow.css">
+<link rel="stylesheet" href="css/vpt.css">
+<link rel="stylesheet" href="css/flashlog.css">
+<link rel="stylesheet" href="css/mp.css">
+<link rel="stylesheet" href="css/mesi.css">
+<link rel="stylesheet" href="css/cards.css">
+<link rel="stylesheet" href="css/memviz.css">
+<link rel="stylesheet" href="css/fsviz.css">
+<link rel="stylesheet" href="css/procviz.css">
+<link rel="stylesheet" href="css/print.css">
+</head>
+<body>
+<div class="app" id="app"></div>
+<noscript>OScope needs JavaScript to run the simulations.</noscript>
+<script src="js/core/util.js"></script>
+<script src="js/core/player.js"></script>
+<script src="js/core/labs.js"></script>
+<script src="js/core/frame.js"></script>
+<script src="js/core/search.js"></script>
+<script src="js/engines/scheduling.js"></script>
+<script src="js/engines/paging.js"></script>
+<script src="js/engines/allocation.js"></script>
+<script src="js/engines/translation.js"></script>
+<script src="js/engines/disk.js"></script>
+<script src="js/engines/procstate.js"></script>
+<script src="js/engines/bankers.js"></script>
+<script src="js/engines/rag.js"></script>
+<script src="js/engines/sync.js"></script>
+<script src="js/engines/gc.js"></script>
+<script src="js/engines/journal.js"></script>
+<script src="js/engines/overflow.js"></script>
+<script src="js/engines/vpt.js"></script>
+<script src="js/engines/flashlog.js"></script>
+<script src="js/engines/mp.js"></script>
+<script src="js/engines/mp-clocks.js"></script>
+<script src="js/engines/mp-mutex.js"></script>
+<script src="js/engines/mp-election.js"></script>
+<script src="js/engines/mp-twopc.js"></script>
+<script src="js/engines/mp-raft.js"></script>
+<script src="js/engines/mesi.js"></script>
+<script src="js/engines/concepts.js"></script>
+<script src="js/engines/buddy.js"></script>
+<script src="js/engines/ptables.js"></script>
+<script src="js/engines/segmentation.js"></script>
+<script src="js/engines/cow.js"></script>
+<script src="js/engines/workingset.js"></script>
+<script src="js/engines/frames.js"></script>
+<script src="js/engines/cachemap.js"></script>
+<script src="js/engines/hierarchy.js"></script>
+<script src="js/engines/fileloc.js"></script>
+<script src="js/engines/dirs.js"></script>
+<script src="js/engines/raid.js"></script>
+<script src="js/engines/mlfq.js"></script>
+<script src="js/engines/cfs.js"></script>
+<script src="js/engines/realtime.js"></script>
+<script src="js/engines/forkwait.js"></script>
+<script src="js/engines/ipc.js"></script>
+<script src="js/engines/threadpool.js"></script>
+<script src="js/engines/interrupts.js"></script>
+<script src="js/engines/iomodes.js"></script>
+<script src="js/views/scheduling-view.js"></script>
+<script src="js/views/paging-view.js"></script>
+<script src="js/views/allocation-view.js"></script>
+<script src="js/views/translation-view.js"></script>
+<script src="js/views/disk-view.js"></script>
+<script src="js/views/procstate-view.js"></script>
+<script src="js/views/bankers-view.js"></script>
+<script src="js/views/rag-view.js"></script>
+<script src="js/views/sync-view.js"></script>
+<script src="js/views/gc-view.js"></script>
+<script src="js/views/journal-view.js"></script>
+<script src="js/views/overflow-view.js"></script>
+<script src="js/views/vpt-view.js"></script>
+<script src="js/views/flashlog-view.js"></script>
+<script src="js/views/mp-view.js"></script>
+<script src="js/views/mesi-view.js"></script>
+<script src="js/views/cards-common.js"></script>
+<script src="js/views/boot-view.js"></script>
+<script src="js/views/vmcont-view.js"></script>
+<script src="js/views/privilege-view.js"></script>
+<script src="js/views/numa-view.js"></script>
+<script src="js/views/lab-kit.js"></script>
+<script src="js/views/buddy-view.js"></script>
+<script src="js/views/ptables-view.js"></script>
+<script src="js/views/segmentation-view.js"></script>
+<script src="js/views/cow-view.js"></script>
+<script src="js/views/workingset-view.js"></script>
+<script src="js/views/frames-view.js"></script>
+<script src="js/views/cachemap-view.js"></script>
+<script src="js/views/hierarchy-view.js"></script>
+<script src="js/views/fileloc-view.js"></script>
+<script src="js/views/dirs-view.js"></script>
+<script src="js/views/raid-view.js"></script>
+<script src="js/views/proc-common.js"></script>
+<script src="js/views/mlfq-view.js"></script>
+<script src="js/views/cfs-view.js"></script>
+<script src="js/views/realtime-view.js"></script>
+<script src="js/views/forkwait-view.js"></script>
+<script src="js/views/ipc-view.js"></script>
+<script src="js/views/threadpool-view.js"></script>
+<script src="js/views/interrupts-view.js"></script>
+<script src="js/views/iomodes-view.js"></script>
+<script src="js/labs/scheduling.js"></script>
+<script src="js/labs/mlfq.js"></script>
+<script src="js/labs/cfs.js"></script>
+<script src="js/labs/realtime.js"></script>
+<script src="js/labs/states.js"></script>
+<script src="js/labs/forkwait.js"></script>
+<script src="js/labs/ipc.js"></script>
+<script src="js/labs/threadpool.js"></script>
+<script src="js/labs/sync.js"></script>
+<script src="js/labs/rag.js"></script>
+<script src="js/labs/bankers.js"></script>
+<script src="js/labs/allocation.js"></script>
+<script src="js/labs/buddy.js"></script>
+<script src="js/labs/frames.js"></script>
+<script src="js/labs/gc.js"></script>
+<script src="js/labs/translation.js"></script>
+<script src="js/labs/ptables.js"></script>
+<script src="js/labs/segmentation.js"></script>
+<script src="js/labs/vpt.js"></script>
+<script src="js/labs/paging.js"></script>
+<script src="js/labs/cow.js"></script>
+<script src="js/labs/workingset.js"></script>
+<script src="js/labs/hierarchy.js"></script>
+<script src="js/labs/cachemap.js"></script>
+<script src="js/labs/mesi.js"></script>
+<script src="js/labs/numa.js"></script>
+<script src="js/labs/disk.js"></script>
+<script src="js/labs/iomodes.js"></script>
+<script src="js/labs/raid.js"></script>
+<script src="js/labs/fileloc.js"></script>
+<script src="js/labs/dirs.js"></script>
+<script src="js/labs/journal.js"></script>
+<script src="js/labs/flashlog.js"></script>
+<script src="js/labs/boot.js"></script>
+<script src="js/labs/interrupts.js"></script>
+<script src="js/labs/privilege.js"></script>
+<script src="js/labs/overflow.js"></script>
+<script src="js/labs/vmcont.js"></script>
+<script src="js/labs/clocks.js"></script>
+<script src="js/labs/mutex.js"></script>
+<script src="js/labs/election.js"></script>
+<script src="js/labs/raft.js"></script>
+<script src="js/labs/twopc.js"></script>
+<script src="js/app.js"></script>
+</body>
 </html>

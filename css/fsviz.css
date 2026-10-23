@@ -1,0 +1,18 @@
+/* Tier 2B file-system views (.fv-): disk grid, FAT, directory tree, RAID stripes. */
+.fv-disk { display: grid; grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); gap: 4px; }
+.fv-blk { border: 2px solid var(--line); border-radius: 8px; padding: 3px 2px; text-align: center; font-size: 11.5px; background: var(--surface-2); min-height: 44px; }
+.fv-blk small { display: block; color: var(--ink-2); font-family: var(--font-mono); font-size: 10.5px; }
+.fv-blk b { font-family: var(--font-mono); }
+.fv-blk.meta { border-style: dashed; }
+.fv-blk.hot { outline: 3px solid var(--accent); outline-offset: 1px; }
+.fv-tree td:first-child { white-space: pre; font-family: var(--font-mono); }
+.fv-steps { margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-2); }
+.fv-stripes { border-collapse: separate; border-spacing: 5px; width: 100%; }
+.fv-stripes th { font-size: 12px; color: var(--ink-2); }
+.fv-cell { border: 2px solid var(--line); border-radius: 8px; padding: 4px 2px; text-align: center; font-family: var(--font-mono); font-size: 12px; background: var(--surface-2); min-width: 64px; }
+.fv-cell small { display: block; color: var(--ink-2); }
+.fv-cell.D { background: var(--accent-soft); border-color: var(--accent); }
+.fv-cell.M { background: var(--hit-soft, #e3f6ec); border-color: var(--hit); }
+.fv-cell.P, .fv-cell.Q { background: var(--warn-soft, #fff1d6); border-color: var(--warn); }
+.fv-cell.failed { opacity: 1; text-decoration: line-through; border-color: var(--fault); background: var(--fault-soft); }
+.fv-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12.5px; margin: 8px 0; }

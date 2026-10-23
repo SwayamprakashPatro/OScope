@@ -1,127 +1,25 @@
 /* Banker's algorithm view (.bk-): Work vector, process table with Need / Finish columns, safe-sequence chips, request steps. */
-.bk-in {
-  max-width: 100%;
-}
-.bk-in th {
-  font-size: 12px;
-  color: var(--ink-3);
-}
-.bk-in th[scope="row"] {
-  text-align: right;
-  padding-right: 6px;
-  font-family: var(--font-mono);
-  font-weight: 600;
-  color: var(--ink-2);
-  width: 34px;
-}
-.bk-in input {
-  min-width: 0;
-}
-.bk-work {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: var(--accent-soft);
-  margin-bottom: 12px;
-}
-.bk-wl {
-  font-weight: 700;
-  font-size: 13px;
-  color: var(--ink-2);
-}
-.bk-vec {
-  display: flex;
-  gap: 6px;
-}
-.bk-cell {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 42px;
-  padding: 3px 8px;
-  border-radius: 8px;
-  background: var(--surface);
-  border: 1px solid var(--accent);
-}
-.bk-cell i {
-  font-style: normal;
-  font-size: 11px;
-  color: var(--ink-3);
-}
-.bk-cell b {
-  font-family: var(--font-mono);
-  font-size: 18px;
-}
-.bk-tbl th,
-.bk-tbl td {
-  text-align: center;
-  padding: 5px 8px;
-  font-family: var(--font-mono);
-  font-size: 14px;
-}
-.bk-tbl th[scope="row"] {
-  text-align: left;
-  font-family: var(--font-display);
-  white-space: nowrap;
-}
-.bk-tbl thead th {
-  font-family: var(--font-body, inherit);
-  font-size: 12px;
-}
-.bk-tbl tr.bk-sub th {
-  color: var(--ink-3);
-  font-weight: 500;
-}
-.bk-tbl tr.is-done {
-  opacity: 0.55;
-}
-.bk-tbl tr.is-pick td,
-.bk-tbl tr.is-pick th {
-  background: var(--hit-soft);
-}
-.bk-need {
-  font-weight: 700;
-  color: var(--accent);
-}
-.bk-dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-right: 6px;
-}
-.bk-seq {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 12px;
-}
-.bk-reqv {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.bk-reqv .field {
-  width: 64px;
-}
-.bk-reqv input {
-  width: 100%;
-  text-align: center;
-  font-family: var(--font-mono);
-}
-.bk-steps {
-  margin: 0;
-  padding-left: 0;
-  list-style: none;
-  display: grid;
-  gap: 6px;
-  font-size: 14px;
-}
-.bk-steps li.bad {
-  color: var(--fault);
-  font-weight: 600;
-}
+.bk-in { max-width: 100%; }
+.bk-in th { font-size: 12px; color: var(--ink-3); }
+.bk-in th[scope="row"] { text-align: right; padding-right: 6px; font-family: var(--font-mono); font-weight: 600; color: var(--ink-2); width: 34px; }
+.bk-in input { min-width: 0; }
+.bk-work { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--accent-soft); margin-bottom: 12px; }
+.bk-wl { font-weight: 700; font-size: 13px; color: var(--ink-2); }
+.bk-vec { display: flex; gap: 6px; }
+.bk-cell { display: inline-flex; flex-direction: column; align-items: center; min-width: 42px; padding: 3px 8px; border-radius: 8px; background: var(--surface); border: 1px solid var(--accent); }
+.bk-cell i { font-style: normal; font-size: 11px; color: var(--ink-3); }
+.bk-cell b { font-family: var(--font-mono); font-size: 18px; }
+.bk-tbl th, .bk-tbl td { text-align: center; padding: 5px 8px; font-family: var(--font-mono); font-size: 14px; }
+.bk-tbl th[scope="row"] { text-align: left; font-family: var(--font-display); white-space: nowrap; }
+.bk-tbl thead th { font-family: var(--font-body, inherit); font-size: 12px; }
+.bk-tbl tr.bk-sub th { color: var(--ink-3); font-weight: 500; }
+.bk-tbl tr.is-done { opacity: 0.78; }
+.bk-tbl tr.is-pick td, .bk-tbl tr.is-pick th { background: var(--hit-soft); }
+.bk-need { font-weight: 700; color: var(--accent); }
+.bk-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+.bk-seq { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.bk-reqv { display: flex; gap: 8px; flex-wrap: wrap; }
+.bk-reqv .field { width: 64px; }
+.bk-reqv input { width: 100%; text-align: center; font-family: var(--font-mono); }
+.bk-steps { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; }
+.bk-steps li.bad { color: var(--fault); font-weight: 600; }

@@ -1,0 +1,17 @@
+/* Tier 5 concept cards (.cd-). */
+.cd-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; counter-reset: s; }
+.cd-steps li { counter-increment: s; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 12.5px; color: var(--ink-2); background: var(--surface-2); }
+.cd-steps li::before { content: counter(s) ". "; font-family: var(--font-mono); }
+.cd-steps li.done { color: var(--ink); border-color: var(--hit); }
+.cd-steps li.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }
+.cd-note { margin-top: 10px; }
+.cd-check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; cursor: pointer; }
+.cd-list { margin: 6px 0 12px; padding-left: 18px; font-size: 14px; }
+.cd-rings { position: relative; height: 150px; margin: 4px auto 14px; max-width: 320px; }
+.cd-rings .r3 { position: absolute; inset: 0; border: 2px solid var(--line); border-radius: 50%; background: var(--surface-2); display: flex; justify-content: center; padding-top: 8px; font-size: 12px; color: var(--ink-2); }
+.cd-rings .r0 { position: absolute; inset: 40px 70px; border: 2px solid var(--fault); border-radius: 50%; background: var(--fault-soft); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--fault); text-align: center; }
+.why h4 { margin: 0 0 6px; }
+.cd-tbl th, .cd-tbl td { text-align: left; font-family: inherit; font-size: 13.5px; vertical-align: top; }
+.cd-rings .r0 { z-index: 1; }
+.why dt { font-weight: 700; margin-top: 8px; }
+.why dd { margin: 2px 0 0; }

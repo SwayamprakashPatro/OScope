@@ -1,0 +1,24 @@
+/* Cache coherence view (.me-). */
+.me-grid { width: 100%; border-collapse: separate; border-spacing: 6px; }
+.me-grid th { font-size: 12.5px; color: var(--ink-2); text-align: center; font-weight: 700; }
+.me-grid th.me-act { color: var(--accent); }
+.me-cell { border: 2px solid var(--line); border-radius: 10px; min-width: 64px; padding: 6px 4px; text-align: center; background: var(--surface-2); }
+.me-cell b { display: block; font-family: var(--font-mono); font-size: 17px; }
+.me-cell span { display: block; font-family: var(--font-mono); font-size: 13px; color: var(--ink-2); min-height: 17px; }
+.me-cell.touched { outline: 3px solid var(--accent); outline-offset: 1px; }
+.me-M { background: var(--fault-soft); border-color: var(--fault); }
+.me-M b { color: var(--fault); }
+.me-E { background: var(--accent-soft); border-color: var(--accent); }
+.me-E b { color: var(--accent); }
+.me-S { background: var(--hit-soft, #e3f6ec); border-color: var(--hit); }
+.me-S b { color: var(--hit); }
+.me-I { border-style: dashed; }
+.me-I b { color: var(--ink-2); }
+.me-mem { background: var(--surface); }
+.me-sw { display: inline-block; width: 14px; height: 14px; border-radius: 4px; margin-right: 6px; vertical-align: -2px; border: 2px solid var(--line); }
+.me-sw.me-M { background: var(--fault-soft); border-color: var(--fault); }
+.me-sw.me-E { background: var(--accent-soft); border-color: var(--accent); }
+.me-sw.me-S { background: var(--hit-soft, #e3f6ec); border-color: var(--hit); }
+.me-bus { margin: 10px 0 6px; font-size: 13.5px; }
+.me-tx { display: inline-block; margin: 2px 6px 2px 0; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--warn); background: var(--warn-soft, #fff1d6); font-family: var(--font-mono); font-size: 12px; }
+.me-cur { background: var(--accent-soft); font-weight: 700; }

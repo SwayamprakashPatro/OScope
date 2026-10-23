@@ -66,7 +66,7 @@
   function mount(host) {
     // fromPreset(p): turn an example into editable state (queue text, head, number of cylinders, direction).
     const fromPreset = (p) => ({ queue: p.queue, head: p.head, cyl: p.cyl, direction: p.direction });
-    let state = Object.assign(fromPreset(D.PRESETS[0]), { algo: 'fcfs', countJump: true, sstfTie: 'lower', tab: 'viz' }, store.get(KEY, {}));
+    let state = Object.assign(fromPreset(D.PRESETS[0]), { algo: 'fcfs', countJump: true, sstfTie: 'lower', tab: 'viz' }, D.TIME_DEFAULTS, store.get(KEY, {}));
     if (!D.BY_ID[state.algo]) state.algo = 'fcfs';
     const save = () => store.set(KEY, state);
     // sim = engine result; valid = last input was valid.
@@ -82,7 +82,15 @@
     const ws = el('div', { class: 'workspace' }), colMain = el('div', { class: 'col' }), colSide = el('div', { class: 'col problem' });
     ws.append(colMain, colSide); view.appendChild(ws); host.appendChild(view);
     const aboutHost = el('div', { class: 'card' }), vizHost = el('div', { class: 'col' }), cmpHost = el('div', { class: 'col' });
-    colMain.append(aboutHost, vizHost, cmpHost);
+    // Time card: sits under both tabs. Its three inputs are built once (so typing keeps focus); only the
+    // results part is redrawn by renderTime().
+    const timeCard = el('div', { class: 'card' }), timeOut = el('div'), timeErr = el('div', { class: 'errors', hidden: true, role: 'alert' });
+    const timeField = (key, label, step) => el('div', { class: 'field' }, el('label', { for: 'dk-' + key }, label),
+      el('input', { type: 'number', id: 'dk-' + key, step, min: 0, value: state[key], oninput: (e) => { state[key] = e.target.value; save(); renderTime(); } }));
+    timeCard.append(el('div', { class: 'card-head' }, el('h3', null, 'Where does the time go?'), el('span', { class: 'sub' }, 'Seek is only one part of a disk access')),
+      el('div', { class: 'dk-geo' }, timeField('rpm', 'Spindle speed (RPM)', 100), timeField('seekPerCylMs', 'Seek time per cylinder (ms)', 0.01), timeField('sectors', 'Sectors per track', 10)),
+      timeErr, timeOut);
+    colMain.append(aboutHost, vizHost, cmpHost, timeCard);
 
     // The 'disk' card: a strip of cylinders with pending requests (outlined) and served ones (filled), and the head.
     const stripCard = el('div', { class: 'card' });
@@ -155,6 +163,7 @@
       sim = D.simulate(reqs, head, cyl, state.algo, cfgOf());
       buildStrip();
       if (state.tab === 'cmp') buildCompare();
+      renderTime();
       player.setStops(sim.frames.map((_, i) => i), Math.min(player.pos, sim.frames.length - 1));
     }
 
@@ -192,6 +201,32 @@
       resCard.replaceChildren(el('div', { class: 'card-head' }, el('h3', null, 'Total seek distance')),
         el('div', { class: 'stats' }, tile('Total so far', f.total), tile('Requests served', f.served + ' / ' + sim.frames[0].pending.length), tile('Average per request', f.served ? fmt(f.total / f.served, 2) : '–')),
         f.working ? el('details', { class: 'working', open: true }, el('summary', null, 'Show the working'), el('pre', null, f.working)) : el('p', { class: 'hint', style: { marginTop: '10px' } }, 'The working appears as the head moves.'));
+    }
+
+    // renderTime(): for every algorithm, split the total time into seek, rotational latency and transfer.
+    // Scheduling only changes the seek column: every algorithm serves the same number of requests, so the other
+    // two columns are identical. The row of the algorithm you are viewing is highlighted.
+    function renderTime() {
+      const { reqs, head, cyl } = inputs();
+      const tv = D.validateTime(state), v = D.validate(reqs, head, cyl);
+      timeErr.hidden = tv.ok; timeErr.replaceChildren(...tv.errors.map((m) => el('div', null, m)));
+      if (!tv.ok || !v.ok) { timeOut.replaceChildren(); return; }
+      const all = D.simulateAll(reqs, head, cyl, cfgOf());
+      const t = {}; D.ALGOS.forEach((a) => { t[a.id] = D.diskTime(all[a.id].total, reqs.length, state); });
+      const base = t[D.ALGOS[0].id];
+      const bestMs = Math.min(...D.ALGOS.map((a) => t[a.id].totalMs));
+      const ms = (x) => fmt(x, 1);
+      const rows = D.ALGOS.map((a) => el('tr', { class: a.id === state.algo ? 'dk-cur' : '' },
+        el('td', null, a.short), el('td', null, all[a.id].total), el('td', null, ms(t[a.id].seekMs)), el('td', null, ms(t[a.id].rotMs)), el('td', null, ms(t[a.id].xferMs)),
+        el('td', { class: Math.abs(t[a.id].totalMs - bestMs) < 1e-9 ? 'best' : '' }, ms(t[a.id].totalMs)), el('td', null, fmt(t[a.id].seekShare * 100, 0) + '%')));
+      const cur = t[state.algo];
+      timeOut.replaceChildren(
+        el('p', { class: 'note' }, 'One rotation takes ' + fmt(base.rotationPeriodMs, 2) + ' ms, so on average a sector is ' + fmt(base.avgRotationalMs, 2) + ' ms away (half a turn) and reading it takes ' + fmt(base.transferPerSectorMs, 3) + ' ms. Each request pays both, whatever order the head visits them in.'),
+        el('div', { class: 'dk-stack', role: 'img', 'aria-label': state.algo + ': ' + fmt(cur.seekShare * 100, 0) + ' percent of the time is seeking' },
+          el('span', { class: 'dk-seg seek', style: { flexGrow: cur.seekMs } }), el('span', { class: 'dk-seg rot', style: { flexGrow: cur.rotMs } }), el('span', { class: 'dk-seg xfer', style: { flexGrow: Math.max(cur.xferMs, cur.totalMs * 0.004) } })),
+        el('div', { class: 'key-legend' }, el('span', null, el('i', { class: 'dk-sw seek' }), 'seek'), el('span', null, el('i', { class: 'dk-sw rot' }), 'rotational latency'), el('span', null, el('i', { class: 'dk-sw xfer' }), 'transfer')),
+        el('div', { class: 'tbl-wrap' }, el('table', { class: 'tbl' }, el('thead', null, el('tr', null, ['Algorithm', 'Cylinders moved', 'Seek (ms)', 'Rotation (ms)', 'Transfer (ms)', 'Total (ms)', 'Seek share'].map((h) => el('th', null, h)))), el('tbody', null, rows))),
+        el('p', { class: 'note' }, 'Only the seek column changes between algorithms. Choosing the best scheduler saves ' + ms(Math.max(...D.ALGOS.map((a) => t[a.id].totalMs)) - bestMs) + ' ms here, out of ' + ms(Math.max(...D.ALGOS.map((a) => t[a.id].totalMs))) + ' ms in the worst case. Try a faster seek (smaller ms per cylinder) and watch rotation take over.'));
     }
 
     // buildCompare(): run all six algorithms on the same queue; show a bar chart and table of total seek distance

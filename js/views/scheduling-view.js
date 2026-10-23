@@ -116,7 +116,7 @@
       if (frame.running) {
         const pid = frame.running;
         put(pid, { x: L.cpu.x + (L.cpu.w - CW) / 2, y: L.cpu.y + (L.cpu.h - CH) / 2 - 8 }, 'is-running', frame.remaining[pid] + ' left', frame.remaining[pid] / byPid[pid].burst);
-        cpuInfo.textContent = sim.cfg.algo === 'rr' ? 'slice ' + frame.slice + ' of ' + sim.cfg.quantum : 'running';
+        cpuInfo.textContent = S.isSliced(sim.cfg.algo) ? 'slice ' + frame.slice + ' of ' + sim.cfg.quantum : 'running';
         zCpu.classList.add('is-busy');
       } else {
         cpuInfo.textContent = frame.t >= sim.total ? 'all done' : 'idle';
@@ -195,7 +195,7 @@
     // Starting problem. Your edits are saved in localStorage, so a refresh brings them back.
     const defaults = () => ({
       rows: S.PRESETS.find((p) => p.id === 'mixed').rows.map(([a, b, p]) => ({ arrival: a, burst: b, priority: p })),
-      algo: 'srtf', quantum: 3, lowerIsHigher: true, tieBreak: 'arrival', rrArrivalsFirst: true, mode: 'unit', tab: 'viz'
+      algo: 'srtf', quantum: 3, lowerIsHigher: true, tieBreak: 'arrival', rrArrivalsFirst: true, agingEvery: 3, seed: 1, mode: 'unit', tab: 'viz'
     });
     let state = Object.assign(defaults(), store.get(KEY, {}));
     if (!Array.isArray(state.rows) || !state.rows.length || !S.BY_ID[state.algo]) state = defaults();
@@ -289,6 +289,8 @@
       if (!p) return;
       state.rows = p.rows.map(([a, b, pr]) => ({ arrival: a, burst: b, priority: pr }));
       state.algo = p.algo; state.quantum = p.quantum;
+      if (p.agingEvery != null) state.agingEvery = p.agingEvery;
+      if (p.seed != null) state.seed = p.seed;
       presetNote.textContent = p.note;
       save(); renderAlgo(); renderSettings(); renderRows(); recompute();
     });
@@ -316,12 +318,12 @@
     colSide.appendChild(probCard);
 
     // The priority column is only shown when it matters (priority algorithms, or the Compare tab).
-    function showPrio() { return /^priority/.test(state.algo) || state.tab === 'cmp'; }
+    function showPrio() { return S.usesPriorityColumn(state.algo) || state.tab === 'cmp'; }
 
     // renderRows(): the editable process table. Each keystroke updates `state` and triggers a debounced recompute.
     function renderRows() {
       const prio = showPrio();
-      const head = el('tr', null, el('th', null, 'Process'), el('th', null, 'Arrival'), el('th', null, 'Burst'), prio ? el('th', null, 'Priority') : null, el('th', null, ''));
+      const head = el('tr', null, el('th', null, 'Process'), el('th', null, 'Arrival'), el('th', null, 'Burst'), prio ? el('th', null, state.algo === 'lottery' ? 'Tickets' : 'Priority') : null, el('th', null, ''));
       const body = state.rows.map((r, i) => {
         const pid = 'P' + (i + 1);
         const inp = (field, min) => el('input', {
@@ -342,9 +344,21 @@
     // renderSettings(): algorithm-specific options (quantum, tie conventions, which priority number is higher).
     function renderSettings() {
       const kids = [];
-      if (state.algo === 'rr') {
+      if (S.isSliced(state.algo)) {
         kids.push(el('div', { class: 'field' }, el('label', { for: 'sch-quantum' }, 'Time quantum'),
           el('input', { type: 'number', id: 'sch-quantum', min: 1, step: 1, value: state.quantum, oninput: (e) => { state.quantum = e.target.value; save(); schedule(); } })));
+      }
+      // Priority aging: how many ticks of waiting earn one step of priority.
+      if (state.algo === 'priority_aging') {
+        kids.push(el('div', { class: 'field' }, el('label', { for: 'sch-aging' }, 'Boost priority by one step every N ticks of waiting'),
+          el('input', { type: 'number', id: 'sch-aging', min: 1, step: 1, value: state.agingEvery, oninput: (e) => { state.agingEvery = e.target.value; save(); schedule(); } })));
+      }
+      // Lottery: the random seed. The same seed always gives the same draws.
+      if (state.algo === 'lottery') {
+        kids.push(el('div', { class: 'field' }, el('label', { for: 'sch-seed' }, 'Random seed (same seed = same draws)'),
+          el('input', { type: 'number', id: 'sch-seed', step: 1, value: state.seed, oninput: (e) => { state.seed = e.target.value; save(); schedule(); } })));
+      }
+      if (state.algo === 'rr') {
         kids.push(el('div', { class: 'field' }, el('label', { for: 'sch-rrorder' }, 'When a quantum ends and a process arrives at the same moment'),
           el('select', { id: 'sch-rrorder', onchange: (e) => { state.rrArrivalsFirst = e.target.value === 'new'; save(); recompute(); } },
             el('option', { value: 'new', selected: state.rrArrivalsFirst }, 'New arrival joins the queue first'),
@@ -405,7 +419,7 @@
 
     // config(): the engine settings collected from the UI state.
     function config() {
-      return { algo: state.algo, quantum: state.quantum, lowerIsHigher: state.lowerIsHigher, tieBreak: state.tieBreak, rrArrivalsFirst: state.rrArrivalsFirst };
+      return { algo: state.algo, quantum: state.quantum, lowerIsHigher: state.lowerIsHigher, tieBreak: state.tieBreak, rrArrivalsFirst: state.rrArrivalsFirst, agingEvery: state.agingEvery, seed: state.seed };
     }
 
     // recompute(): validate -> simulate -> rebuild the visuals. If the input is invalid, mark the bad fields
@@ -467,9 +481,9 @@
     function eventText(ev, fr) {
       const p = (pid) => sim.procs.find((x) => x.pid === pid);
       switch (ev.type) {
-        case 'arrive': return ev.pid + ' arrives (burst ' + p(ev.pid).burst + (/^priority/.test(state.algo) ? ', priority ' + p(ev.pid).priority : '') + ') and joins the ready queue.';
+        case 'arrive': return ev.pid + ' arrives (burst ' + p(ev.pid).burst + (state.algo === 'lottery' ? ', ' + p(ev.pid).priority + ' ticket' + (p(ev.pid).priority === 1 ? '' : 's') : (/^priority/.test(state.algo) ? ', priority ' + p(ev.pid).priority : '')) + ') and joins the ready queue.';
         case 'dispatch': return ev.pid + ' is dispatched: it gets the CPU.';
-        case 'continue': return 'Nobody else is waiting, so ' + ev.pid + ' simply gets another quantum.';
+        case 'continue': return ev.won ? ev.pid + ' wins the draw again and gets another quantum.' : 'Nobody else is waiting, so ' + ev.pid + ' simply gets another quantum.';
         case 'preempt': return ev.pid + ' is preempted by ' + ev.by + ' and goes back to the ready queue with ' + fr.remaining[ev.pid] + ' unit' + (fr.remaining[ev.pid] === 1 ? '' : 's') + ' left.';
         case 'quantum': return ev.pid + ' has used its full quantum of ' + ev.quantum + '.';
         case 'finish': return ev.pid + ' finishes at time ' + ev.time + '.';
@@ -498,8 +512,8 @@
     /* ---- results ---- */
     // buildResults(): create the results table with '...' placeholders; drawResults fills them in as processes finish.
     function buildResults() {
-      const prio = /^priority/.test(state.algo);
-      const head = el('tr', null, ['Process', 'Arrival', 'Burst', prio ? 'Priority' : null, 'Finish', 'Turnaround', 'Waiting', 'Response'].filter(Boolean).map((h) => el('th', null, h)));
+      const prio = S.usesPriorityColumn(state.algo);
+      const head = el('tr', null, ['Process', 'Arrival', 'Burst', prio ? (state.algo === 'lottery' ? 'Tickets' : 'Priority') : null, 'Finish', 'Turnaround', 'Waiting', 'Response'].filter(Boolean).map((h) => el('th', null, h)));
       const rows = sim.per.map((r) => {
         const cells = {
           ct: el('td', { class: 'pending' }, '…'), tat: el('td', { class: 'pending' }, '…'),
@@ -559,7 +573,7 @@
     }
 
     /* ---- compare tab ---- */
-    // buildCompare(): run all six algorithms on the same processes and tabulate the averages. The best value
+    // buildCompare(): run every deterministic algorithm (the random lottery is left out) on the same processes and tabulate the averages. The best value
     // in each column is marked; below it, every algorithm's Gantt chart is drawn side by side.
     function buildCompare() {
       const v = S.validate(state.rows, { algo: 'priority_np', quantum: state.quantum });
@@ -567,16 +581,16 @@
       const all = S.simulateAll(v.clean, config());
       const keys = [['avgWT', 'Avg waiting'], ['avgTAT', 'Avg turnaround'], ['avgRT', 'Avg response'], ['switches', 'Context switches'], ['utilization', 'CPU util. %']];
       const bestOf = {};
-      keys.forEach(([k]) => { bestOf[k] = Math.min.apply(null, S.ALGOS.map((a) => all[a.id].metrics[k])); });
+      keys.forEach(([k]) => { bestOf[k] = Math.min.apply(null, S.COMPARE_ALGOS.map((a) => all[a.id].metrics[k])); });
       // Utilisation is the one metric where bigger is better.
-      bestOf.utilization = Math.max.apply(null, S.ALGOS.map((a) => all[a.id].metrics.utilization));
-      const rows = S.ALGOS.map((a) => {
+      bestOf.utilization = Math.max.apply(null, S.COMPARE_ALGOS.map((a) => all[a.id].metrics.utilization));
+      const rows = S.COMPARE_ALGOS.map((a) => {
         const m = all[a.id].metrics;
         return el('tr', null,
           el('td', null, a.short + (a.id === 'rr' ? ' (q=' + state.quantum + ')' : '')),
           keys.map(([k]) => el('td', { class: Math.abs(m[k] - bestOf[k]) < 1e-9 ? 'best' : '' }, k === 'utilization' ? fmt(m[k], 1) : k === 'switches' ? m[k] : fmt(m[k]))));
       });
-      const waits = S.ALGOS.map((a) => ({ a, v: all[a.id].metrics.avgWT })).sort((x, y) => x.v - y.v);
+      const waits = S.COMPARE_ALGOS.map((a) => ({ a, v: all[a.id].metrics.avgWT })).sort((x, y) => x.v - y.v);
       const bestNames = waits.filter((w) => Math.abs(w.v - waits[0].v) < 1e-9).map((w) => w.a.short).join(' and ');
       cmpHost.replaceChildren(
         el('div', { class: 'card' },
@@ -585,7 +599,7 @@
           el('p', { class: 'note', style: { marginTop: '10px' } }, 'Lowest average waiting time for this problem: ' + bestNames + ' (' + fmt(waits[0].v) + '). Highest: ' + waits[waits.length - 1].a.short + ' (' + fmt(waits[waits.length - 1].v) + ').')),
         el('div', { class: 'card' },
           el('div', { class: 'card-head' }, el('h3', null, 'Gantt charts side by side')),
-          S.ALGOS.map((a) => {
+          S.COMPARE_ALGOS.map((a) => {
             const slot = el('div');
             const block = el('div', null, el('div', { class: 'row-inline', style: { marginBottom: '4px' } }, el('b', null, a.short), el('span', { class: 'hint' }, 'finishes at ' + all[a.id].total)), slot);
             Gantt(slot, all[a.id], { static: true });

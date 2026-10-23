@@ -1,0 +1,27 @@
+/* Lab frame: breadcrumb above each concept and the "Go deeper" card below it. Prefix: .fr- */
+.fr-crumb { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 13px; color: var(--ink-3); margin: 0 0 6px 2px; }
+.fr-crumb strong { color: var(--ink-2); font-weight: 600; }
+.fr-sep { color: var(--ink-3); }
+.fr-badge { margin-left: 6px; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--ink); }
+
+.fr-learn { margin-top: 18px; }
+.fr-learn h3 { font-size: 15px; margin: 0 0 8px; }
+.fr-idea, .fr-hook { margin: 0 0 8px; color: var(--ink-2); line-height: 1.55; }
+.fr-idea b, .fr-hook b { color: var(--ink); }
+.fr-hook { padding: 8px 12px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 8px 8px 0; color: var(--ink); }
+
+.fr-fold { border-top: 1px solid var(--line); padding: 2px 0; }
+.fr-fold:last-child { border-bottom: 1px solid var(--line); }
+.fr-fold summary { cursor: pointer; padding: 9px 2px; font-weight: 600; display: flex; align-items: center; gap: 8px; list-style: none; }
+.fr-fold summary::-webkit-details-marker { display: none; }
+.fr-fold summary::before { content: '▸'; color: var(--ink-3); transition: transform 0.15s; }
+.fr-fold[open] summary::before { transform: rotate(90deg); }
+.fr-fold summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.fr-count { font-weight: 500; font-size: 12px; color: var(--ink-3); border: 1px solid var(--line); border-radius: 999px; padding: 0 7px; }
+.fr-list { margin: 0 0 10px; padding-left: 22px; color: var(--ink-2); line-height: 1.55; }
+.fr-list li { margin: 4px 0; }
+
+/* Jump button: only shown when the layout is one column (the input panel sits below the animation) */
+.fr-jump { display: none; position: fixed; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 20; border: 0; border-radius: 999px; padding: 10px 16px; font-weight: 700; font-size: 14px; background: var(--accent); color: var(--accent-ink); box-shadow: 0 6px 20px -6px rgba(0, 0, 0, 0.45); }
+.fr-jump[hidden] { display: none !important; }
+@media (max-width: 1180px) { .fr-jump { display: inline-flex; } }

@@ -102,7 +102,7 @@
   function mount(host) {
     const fromPreset = (p) => ({ procs: p.procs, res: p.res, edges: p.edges });
     // State: the three text inputs and the wait-for toggle (saved to localStorage).
-    let state = Object.assign(fromPreset(G.PRESETS[0]), { showWF: false }, store.get(KEY, {}));
+    let state = Object.assign(fromPreset(G.PRESETS[0]), { showWF: false, recStrategy: 'abort-one', recPolicy: 'fewest' }, store.get(KEY, {}));
     const save = () => store.set(KEY, state);
     // model = parsed graph; sim = engine result (cycle, deadlocked set, reduction frames).
     let sim = null, model = null;
@@ -128,11 +128,26 @@
     const verdictCard = el('div', { class: 'card' });
     const wfCard = el('div', { class: 'card' }), wfSlot = el('div', { class: 'rg-graph' });
     wfCard.append(el('div', { class: 'card-head' }, el('h3', null, 'Wait-for graph'), el('span', { class: 'sub' }, 'Same story with resources removed')), wfSlot);
+    // Recovery card: shown only when there is a deadlock. The two selects are built once (so they keep
+    // focus while you change them); renderRecovery() only redraws the result below them.
+    const recCard = el('div', { class: 'card', hidden: true }), recOut = el('div');
+    const strategySel = el('select', { id: 'rg-strategy', onchange: (e) => { state.recStrategy = e.target.value; save(); renderRecovery(); } },
+      el('option', { value: 'abort-one', selected: state.recStrategy === 'abort-one' }, 'Terminate one process at a time'),
+      el('option', { value: 'abort-all', selected: state.recStrategy === 'abort-all' }, 'Terminate every deadlocked process'),
+      el('option', { value: 'preempt', selected: state.recStrategy === 'preempt' }, 'Preempt a resource and roll back'));
+    const policySel = el('select', { id: 'rg-policy', onchange: (e) => { state.recPolicy = e.target.value; save(); renderRecovery(); } },
+      el('option', { value: 'fewest', selected: state.recPolicy === 'fewest' }, 'Victim holds the fewest resources'),
+      el('option', { value: 'most', selected: state.recPolicy === 'most' }, 'Victim holds the most resources'),
+      el('option', { value: 'first', selected: state.recPolicy === 'first' }, 'Lowest process number'));
+    recCard.append(el('div', { class: 'card-head' }, el('h3', null, 'Recovery: getting out of the deadlock'), el('span', { class: 'sub' }, 'Detection says who is stuck; recovery decides what to give up')),
+      el('div', { class: 'grid2' },
+        el('div', { class: 'field' }, el('label', { for: 'rg-strategy' }, 'Strategy'), strategySel),
+        el('div', { class: 'field' }, el('label', { for: 'rg-policy' }, 'Who is the victim?'), policySel)), recOut);
     const condCard = el('div', { class: 'card' });
     condCard.append(el('div', { class: 'card-head' }, el('h3', null, 'Four conditions for deadlock'), el('span', { class: 'sub' }, 'All four must hold at once')),
       el('div', { class: 'tbl-wrap' }, el('table', { class: 'tbl rg-cond' }, el('thead', null, el('tr', null, ['Condition', 'Meaning', 'Break it by'].map((h) => el('th', null, h)))), el('tbody', null, CONDITIONS.map((c) => el('tr', null, el('td', null, el('b', null, c[0])), el('td', null, c[1]), el('td', null, c[2])))))),
       el('p', { class: 'note', style: { marginTop: '10px' } }, 'Memory hook: "My Hands Never Circle", for Mutual exclusion, Hold and wait, No preemption, Circular wait.'));
-    colMain.append(graphCard, whyCard, verdictCard, wfCard, condCard);
+    colMain.append(graphCard, whyCard, verdictCard, recCard, wfCard, condCard);
     // Shared playback bar; steps are: the graph, the cycle search, then each reduction.
     const player = new NS.Player(playerHost, { label: 'Step', onChange: (i) => draw(i) });
 
@@ -174,8 +189,30 @@
       const r = G.parse(state.procs, state.res, state.edges);
       errBox.hidden = r.ok; errBox.replaceChildren(...r.errors.map((m) => el('div', null, m)));
       if (!r.ok) { return; }
-      model = r.model; sim = G.reduce(model); renderQuick();
+      model = r.model; sim = G.reduce(model); renderQuick(); renderRecovery();
       player.setStops(sim.frames.map((_, i) => i), Math.min(player.pos, sim.frames.length - 1));
+    }
+
+    // renderRecovery(): run G.recover() with the chosen strategy and policy and show each step, the cost, and
+    // the graph that remains. The policy only matters when a victim is chosen, so it is disabled for 'abort all'.
+    function renderRecovery() {
+      if (!sim || !model) return;
+      recCard.hidden = !sim.deadlocked.length;
+      if (!sim.deadlocked.length) return;
+      policySel.disabled = state.recStrategy === 'abort-all';
+      const rec = G.recover(model, { strategy: state.recStrategy, policy: state.recPolicy });
+      const cost = rec.strategy === 'preempt'
+        ? rec.preemptions + ' rollback' + (rec.preemptions === 1 ? '' : 's') + ', nobody terminated'
+        : rec.aborted.length + ' of ' + model.procs.length + ' processes terminated (' + rec.aborted.join(', ') + ')';
+      recOut.replaceChildren(
+        el('ol', { class: 'rg-steps' }, rec.steps.map((st) => el('li', null, st.text, el('span', { class: 'rg-after' },
+          st.deadlockedAfter.length ? ' Still deadlocked: ' + st.deadlockedAfter.join(', ') + '.' : ' No deadlock left.')))),
+        el('div', { class: 'stats' }, el('div', { class: 'stat' }, el('span', null, 'Cost'), el('b', null, cost)),
+          el('div', { class: 'stat' }, el('span', null, 'Survivors'), el('b', null, rec.final.procs.join(', ') || 'none'))),
+        el('div', { class: 'rg-graph' }, drawGraph(rec.final, null, { W: 520, H: 300, mid: 'rg-a3', label: 'Graph after recovery' })),
+        el('p', { class: 'note' }, rec.strategy === 'preempt'
+          ? 'Preemption keeps every process alive, but a victim that keeps being chosen may never finish (starvation), and rolling back is only safe if the process can be restarted from a checkpoint.'
+          : 'Terminating loses all the work the victim did. Choosing the victim by cost (how much it has done, how many resources it holds) is the usual policy; killing one at a time re-runs detection after each kill.'));
     }
 
     // draw(i): render the graph and wait-for graph for this frame, the explanation, and the verdict card

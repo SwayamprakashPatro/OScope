@@ -1,0 +1,12 @@
+/* Print: show only the lab itself (title, animation state, tables, explanations); drop navigation and controls. */
+@media print {
+  body { background: #fff; color: #000; padding: 0; }
+  .topbar, .rail, .player, .fr-jump, .sr-overlay, .tabs, .chips, .mode, .pbtns, .icon-btn, .btn { display: none !important; }
+  .shell { display: block; }
+  .workspace { display: block; }
+  .problem { position: static; max-height: none; overflow: visible; }
+  .card { box-shadow: none; break-inside: avoid; border-color: #999; }
+  .about:not([open]) > :not(summary) { display: none; }
+  details > :not(summary) { display: revert; }
+  a { color: inherit; }
+}

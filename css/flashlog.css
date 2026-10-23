@@ -1,0 +1,23 @@
+/* Log-structured FS / SSD view (.fl-). */
+.fl-blocks { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+.fl-block { border: 1px solid var(--line); border-radius: 10px; padding: 6px; background: var(--surface-2); min-width: 0; }
+.fl-block.head { outline: 3px solid var(--accent); outline-offset: -1px; }
+.fl-bn { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); margin-bottom: 3px; }
+.fl-pages { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; }
+.fl-pg { display: block; height: 18px; border-radius: 3px; font-family: var(--font-mono); font-size: 10.5px; font-style: normal; text-align: center; line-height: 18px; border: 1px solid var(--line); }
+.fl-H { background: var(--fault); color: var(--surface); border-color: var(--fault); }
+.fl-C { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.fl-x { background: repeating-linear-gradient(45deg, transparent 0 3px, var(--line) 3px 4px); color: var(--ink-3); }
+.fl-f { background: var(--surface); }
+.fl-ebar { position: relative; margin-top: 5px; height: 12px; background: var(--surface); border-radius: 6px; border: 1px solid var(--line); overflow: hidden; }
+.fl-ebar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--warn); opacity: 0.55; }
+.fl-ebar b { position: relative; font-family: var(--font-mono); font-size: 10px; padding-left: 4px; line-height: 10px; }
+.fl-sw { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; border: 1px solid var(--line); }
+.fl-sw.fl-head { background: transparent; outline: 3px solid var(--accent); outline-offset: -2px; }
+.fl-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+.fl-totals > div { border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; background: var(--surface-2); }
+.fl-totals small { display: block; font-size: 11px; color: var(--ink-3); }
+.fl-totals b { font-family: var(--font-mono); font-size: 17px; }
+.fl-log { margin: 6px 0 0; padding-left: 20px; font-size: 13px; color: var(--ink-2); }
+.fl-cmp th, .fl-cmp td { text-align: left; font-size: 12.5px; }
+.fl-sel { background: var(--accent-soft); font-weight: 700; }
