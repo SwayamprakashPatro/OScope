@@ -1,6 +1,6 @@
 # OScope: See inside your OS
 
-**Live site:** (https://swayamprakashpatro.github.io/OScope/) (replace after you deploy; see "Publishing" below)
+**Live site:** https://swayamprakashpatro.github.io/OScope/
 
 **See inside your OS.**
 
@@ -174,5 +174,3 @@ faded "not happened yet" items are exempt from the contrast check.
 2. In the repository: **Settings > Pages > Build and deployment > Source: GitHub Actions**.
 3. The workflow in `.github/workflows/pages.yml` runs the tests and deploys. After about a minute the site is at
    `https://<your-username>.github.io/<repo-name>/`.
-
-The site is plain static files with relative links, so it also works on Netlify, Cloudflare Pages or any static host.
