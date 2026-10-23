@@ -1,6 +1,6 @@
 # OScope: See inside your OS
 
-**Live site:** https://YOUR-USERNAME.github.io/oscope/ (replace after you deploy; see "Publishing" below)
+**Live site:** (https://swayamprakashpatro.github.io/OScope/) (replace after you deploy; see "Publishing" below)
 
 **See inside your OS.**
 
